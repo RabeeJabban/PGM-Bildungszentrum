@@ -1,0 +1,2298 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<style>
+  :root{
+    --bg:#f4f5f8;--line:#e3e6ed;--text:#151823;--mut:#767d8c;
+    --blau:#4f46e5;--ok:#059669;--warn:#dc2626;
+    --cAbhol:#eab308;--cEZ:#0284c7;--cBUT:#16a34a;--cEmp:#7c3aed;
+    --s1:#fff;--s2:#f6f7fa;--s3:#edeff5;
+    --linV:#d5dae4;--linH:#e9ecf2;--linQ:#f1f3f7;
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;margin:0;
+       background:var(--bg);color:var(--text)}
+  header{background:#fff;border-bottom:1px solid var(--line);padding:11px 15px}
+  .titel{font-size:18px;font-weight:700}
+  .sub{color:var(--mut);font-size:13px;margin-top:2px}
+  .kopfz{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .oben{position:sticky;top:0;z-index:60}
+  .kopfz>:first-child{flex:1 1 auto;min-width:0}
+  .kopfz .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .logo{height:34px;width:auto;flex:none;display:block;align-self:flex-start;
+        cursor:pointer;transition:transform .5s ease,opacity .2s}
+  .logo:active{opacity:.55}
+  .logo.dreht{transform:rotate(360deg)}
+  .logo.d{display:none}
+  .wer{font-size:12px;font-weight:700;color:var(--mut);letter-spacing:.2px}
+  .glocke{position:relative;background:transparent;border:0;font-size:19px;
+          cursor:pointer;padding:2px 4px;line-height:1}
+  .punkt{position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;
+         border-radius:99px;background:var(--warn);color:#fff;font-size:10.5px;
+         font-weight:800;display:none;align-items:center;justify-content:center;
+         padding:0 4px}
+  .punkt.an{display:flex}
+  .kspunkt{background:var(--warn);color:#fff;border:0;border-radius:99px;
+           font-size:12px;font-weight:800;padding:3px 9px;cursor:pointer;
+           display:none;align-items:center;line-height:1.3;align-self:flex-start;
+           margin-top:3px}
+  .kspunkt.grau{background:var(--s3);color:var(--mut)}
+  .ksbox{background:var(--s2);border-radius:11px;padding:12px 14px;margin:10px 0 14px;
+         font-size:14px;line-height:1.5}
+  .ksbox p{margin:0 0 9px}
+  .ksbox .kst{font-weight:800;font-size:15px;margin-bottom:8px}
+  .ksdl{display:flex;gap:8px;flex-wrap:wrap}
+  .ksdl a{text-decoration:none;display:inline-block}
+  .kshaken{display:flex;gap:10px;align-items:flex-start;font-size:14px;
+           line-height:1.45;cursor:pointer;margin-top:4px}
+  .kshaken input{width:20px;height:20px;flex:none;margin-top:1px}
+  .meldtext{font-size:12.5px;color:var(--mut);line-height:1.45;
+            margin:3px 0 7px;padding-left:9px;border-left:2px solid var(--line)}
+  .meld{background:var(--s2);border-radius:11px;padding:12px 13px;margin-bottom:8px;
+        font-size:14px;line-height:1.45}
+  .meld.neu{border-left:4px solid var(--warn)}
+  .meldart{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;
+           background:#fef9c3;color:#854d0e;margin-left:6px}
+  .meldart.f{background:#e0f2fe;color:#075985}
+  .meldart.m{background:#ede9fe;color:#5b21b6}
+  @media (prefers-color-scheme:dark){
+    .meldart{background:rgba(202,138,4,.22);color:#fde047}
+    .meldart.f{background:rgba(2,132,199,.25);color:#7dd3fc}
+    .meldart.m{background:rgba(124,58,237,.28);color:#c4b5fd}
+  }
+  .steuer{display:flex;gap:6px;align-items:center;margin-top:9px}
+  input[type=date]{flex:1;padding:8px 10px;border:1px solid var(--line);
+                   border-radius:8px;font-size:14px;font-family:inherit;min-width:0}
+  .btn{padding:8px 13px;border:0;border-radius:8px;font-size:14px;
+       font-weight:600;cursor:pointer;font-family:inherit}
+  .btn.primer{background:var(--blau);color:#fff}
+  .btn.hell{background:#edeff5;color:#39404f}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  .abmelde{display:none;text-align:center;padding:14px 0 26px}
+  .abmelde button{background:none;border:0;font:inherit;font-size:13px;
+                  font-weight:600;color:#6b7280;text-decoration:underline;
+                  cursor:pointer;padding:8px 14px}
+  .tabs{display:flex;gap:4px;padding:0 15px;background:#fff;
+        border-bottom:1px solid var(--line);overflow-x:auto}
+  .tab{padding:11px 14px;font-size:14px;font-weight:600;color:var(--mut);
+       cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+  .tab.an{color:var(--blau);border-bottom-color:var(--blau)}
+
+  main{padding:13px;max-width:1100px;margin:0 auto}
+
+  .gruss{background:#fff;border-radius:13px;padding:15px 17px;margin-bottom:16px;
+         box-shadow:0 1px 3px rgba(18,22,45,.07);border-left:5px solid var(--blau)}
+  .gruss .g1{font-size:21px;font-weight:700}
+  .gruss .g2{font-size:16px;margin-top:3px}
+  .gruss .g3{font-size:14px;color:var(--mut);margin-top:4px}
+
+  .abschnitt{margin-bottom:20px}
+  .akopf{display:flex;align-items:center;gap:8px;margin:0 2px 9px}
+  .atitel{font-size:14px;font-weight:700}
+  .azahl{font-size:12px;color:var(--mut)}
+  .alinie{flex:1;height:1px;background:var(--line)}
+
+  .zgruppe{margin-bottom:12px}
+  .zeit{display:inline-block;background:var(--text);color:#fff;font-size:12px;
+        font-weight:700;padding:4px 11px;border-radius:99px;margin-bottom:7px}
+  .reihe{display:flex;gap:8px;flex-wrap:wrap}
+
+  .karte{background:#fff;border-radius:11px;padding:11px 13px;cursor:pointer;
+         border-left:4px solid var(--line);box-shadow:0 1px 3px rgba(18,22,45,.07);
+         min-width:200px;flex:1 1 230px;max-width:360px}
+  .karte.Abholung{border-left-color:var(--cAbhol)}
+  .karte.BUT{border-left-color:var(--cBUT)}
+  .karte.EZ{border-left-color:var(--cEZ)}
+  .karte.Empfang{border-left-color:var(--cEmp)}
+  .karte.ich{border-left-width:6px;background:#fafaff}
+  .knopf{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+  .kname{font-weight:650;font-size:15px}
+  .kzeit{font-size:12px;color:var(--mut)}
+  .krow{margin-top:6px;display:flex;gap:5px;flex-wrap:wrap}
+  .chip{font-size:11px;font-weight:650;padding:2px 8px;border-radius:99px;
+        background:#eef0f6;color:#4b5563}
+  .chip.abhol{background:#fef9c3;color:#854d0e}
+  .chip.but{background:#dcfce7;color:#166534}
+  .chip.ez{background:#e0f2fe;color:#075985}
+  .chip.emp{background:#ede9fe;color:#5b21b6}
+  .chip.raum{background:#ede9fe;color:#5b21b6}
+  .wer{margin-top:7px;font-size:12.5px;color:var(--mut)}
+  .wer b{color:var(--text)}
+
+  .anwbox{margin-top:10px;border-top:1px solid #f0f2f7;padding-top:9px}
+  .abkopf{display:flex;justify-content:space-between;font-size:12px;
+          font-weight:700;color:var(--mut);margin-bottom:7px}
+  .kid{display:flex;justify-content:space-between;align-items:center;gap:8px;
+       padding:12px;border-radius:9px;background:#f6f7fa;margin-bottom:6px;
+       font-size:15px;cursor:pointer;user-select:none;border:1.5px solid transparent}
+  .kid .kk{font-size:12px;color:var(--mut)}
+  .kid .kk b{font-size:16px;margin-left:8px}
+  .kid.ok{background:#dcfce7;border-color:#16a34a;color:#14532d}
+  .kid.e{background:#fef9c3;border-color:#ca8a04;color:#713f12}
+  .kid.f{background:#fee2e2;border-color:#dc2626;color:#7f1d1d}
+  .kid.ok .kk,.kid.e .kk,.kid.f .kk{color:inherit}
+  .kid.aus{cursor:default}
+  .kid.blass{opacity:.55}
+  .zielkopf{font-size:13px;font-weight:700;margin:12px 2px 6px}
+  .zielz{margin-top:9px;font-size:13.5px;line-height:1.45}
+  .zielz b{display:block;font-size:13px}
+  .anwzu{display:flex;align-items:center;justify-content:space-between;gap:10px;
+         background:#ecfdf5;border-radius:9px;padding:10px 12px}
+  .anwzu .t1{font-weight:650;color:#065f46;font-size:14px}
+  .anwzu .t2{font-size:13px;margin-top:2px;color:#374151}
+  .anwzu .t2 b{margin-right:8px}
+  .s-ok{color:#166534}.s-e{color:#854d0e}.s-f{color:#b91c1c}
+  .kl2{color:var(--mut);font-size:12.5px;margin-top:4px}
+  .wahl3{display:flex;gap:8px;margin:6px 0 12px}
+  .w3{flex:1;padding:16px 6px;border-radius:12px;border:2px solid transparent;
+      font-family:inherit;cursor:pointer;display:flex;flex-direction:column;
+      align-items:center;gap:4px}
+  .w3 b{font-size:24px}
+  .w3 span{font-size:12.5px;font-weight:600}
+  .w3.ok{background:#dcfce7;color:#166534}
+  .w3.e{background:#fef9c3;color:#854d0e}
+  .w3.f{background:#fee2e2;color:#b91c1c}
+  .w3.an{border-color:currentColor}
+
+  .rahmen{overflow-x:auto;background:#fff;border-radius:12px;
+          box-shadow:0 1px 3px rgba(18,22,45,.07)}
+  .raster{display:inline-block;min-width:100%}
+  .kopf{display:flex;border-bottom:2px solid var(--line)}
+  .ecke{width:58px;flex:none}
+  .pk{width:120px;flex:none;padding:8px 5px;text-align:center;
+      border-left:1px solid var(--line)}
+  .pk.ich{background:#eef0fe}
+  .pk.ich .pn{color:var(--blau)}
+  .pk.prakt{background:#f3f4f6}
+  .pk.prakt .pn{color:#4b5563}
+  .pn{font-size:12.5px;font-weight:650;white-space:nowrap;overflow:hidden;
+      text-overflow:ellipsis}
+  .koerper{display:flex}
+  .achse{width:58px;flex:none;border-right:1px solid var(--linV);position:relative}
+  .marke{position:absolute;right:7px;font-size:10px;color:var(--mut);line-height:14px}
+  .marke.voll{font-size:12.5px;font-weight:700;color:var(--text)}
+  .sp{width:120px;flex:none;border-left:1px solid var(--line);position:relative}
+  .sp.ich{background:#fafaff}
+  .lin{position:absolute;left:0;right:0}
+  .lin.v{border-top:1px solid var(--linV)}
+  .lin.h{border-top:1px solid var(--linH)}
+  .lin.q{border-top:1px dashed var(--linQ)}
+  .ein{position:absolute;left:3px;right:3px;border-radius:6px;padding:4px 6px;
+       color:#fff;font-size:11px;line-height:1.3;cursor:pointer;overflow:hidden}
+  .ein b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ein.Abholung{background:var(--cAbhol);color:#422006}
+  .ein.BUT{background:var(--cBUT)}
+  .ein.EZ{background:var(--cEZ)}
+  .ein.Empfang{background:var(--cEmp)}
+  .ein.blass{opacity:.4}
+  .mi{font-size:10px;opacity:.92}
+
+  .modal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(12,16,32,.5);
+         display:none;align-items:center;justify-content:center;z-index:60;padding:14px}
+  .modal.auf{display:flex}
+  .box{background:#fff;width:100%;max-width:430px;border-radius:15px;padding:17px;
+       max-height:88vh;overflow:auto}
+  .box h3{margin:0 0 2px;font-size:17px}
+  .wann{color:var(--mut);font-size:13px;margin-bottom:14px}
+  .feld{margin-bottom:12px}
+  .feld label{display:block;font-size:12px;color:var(--mut);margin-bottom:5px;
+              font-weight:700}
+  .wert{font-size:15px;font-weight:600}
+  .kliste{background:#f6f7fa;border-radius:9px;padding:10px;font-size:13.5px}
+  .kind{padding:4px 0;border-bottom:1px solid #eaedf3}
+  .kind:last-child{border:0}
+
+  .kind{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .st{font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}
+  .st.ok{background:#dcfce7;color:#166534}
+  .st.e{background:#fef9c3;color:#854d0e}
+  .st.f{background:#fee2e2;color:#b91c1c}
+  .st.offen{background:#eef0f6;color:#767d8c}
+  .stsum{font-size:12.5px;margin:-2px 0 8px;display:flex;gap:10px;flex-wrap:wrap}
+  .stsum b{font-weight:700}
+  .zu{width:100%;margin-top:6px;padding:12px;background:var(--blau);color:#fff;
+      border:0;border-radius:9px;font-size:15px;font-weight:600;cursor:pointer}
+  .zu.hellzu{background:#edeff5;color:#39404f}
+
+  .warnbox{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;
+           padding:12px 14px;border-radius:11px;font-size:13.5px;
+           line-height:1.5;margin-bottom:14px}
+  .vtag{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;
+        box-shadow:0 1px 3px rgba(18,22,45,.07)}
+  .vkopf{display:flex;align-items:center;gap:10px}
+  .vname{font-weight:650;font-size:15px;flex:1}
+  .schalter{width:48px;height:27px;border-radius:99px;background:#d7dbe4;
+            position:relative;cursor:pointer;flex:none;transition:background .15s}
+  .schalter.an{background:var(--ok)}
+  .schalter i{position:absolute;top:3px;left:3px;width:21px;height:21px;
+              border-radius:50%;background:#fff;transition:left .15s}
+  .schalter.an i{left:24px}
+  .schalter.warte{opacity:.5;pointer-events:none}
+  .trow{display:flex;align-items:center;justify-content:space-between;gap:10px;
+        background:var(--s1);border-radius:11px;padding:10px 14px;margin-bottom:6px;
+        box-shadow:0 1px 3px rgba(18,22,45,.07)}
+  .trow.aus{opacity:.6}
+  .zweisch{display:flex;gap:14px;align-items:center}
+  .sch1{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .sch1 span{font-size:10.5px;color:var(--mut);font-weight:700}
+  .akopf{display:flex;align-items:center;gap:8px;margin:0 2px 9px}
+  .akopf .btn{padding:5px 11px;font-size:12.5px}
+  .atitel{font-size:14px;font-weight:700}
+  .azahl{font-size:12px;color:var(--mut)}
+  .alinie{flex:1;height:1px;background:var(--line)}
+  .kl{color:var(--mut);font-size:12px}
+  .vzeiten{display:flex;gap:8px;margin-top:10px;align-items:center}
+  .vzeiten input{flex:1;padding:9px;border:1px solid var(--line);
+                 border-radius:8px;font-size:15px;font-family:inherit;min-width:0}
+  .vzeiten span{color:var(--mut);font-size:13px}
+
+  .abwform{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .abwform input{flex:1 1 160px;padding:10px 12px;border:1px solid var(--line);
+       border-radius:10px;font-size:15px;font-family:inherit;min-width:0}
+  .abwform .btn{flex:1 1 120px;padding:11px}
+  .abwzeile{display:flex;justify-content:space-between;align-items:center;gap:10px;
+       background:#fff;border-radius:11px;padding:11px 14px;margin-bottom:8px;
+       box-shadow:0 1px 3px rgba(18,22,45,.07);font-size:14.5px}
+
+  .suche{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .suche input,.suche select{flex:1 1 200px;padding:11px 12px;
+       border:1px solid var(--line);border-radius:10px;font-size:15px;
+       font-family:inherit;background:#fff;min-width:0}
+  .kkarte{background:#fff;border-radius:11px;padding:12px 14px;margin-bottom:8px;
+       box-shadow:0 1px 3px rgba(18,22,45,.07)}
+  .kkarte .kname{font-size:16px;font-weight:650}
+  .kkarte .krow{margin-top:6px;display:flex;gap:5px;flex-wrap:wrap}
+  .chip.ok{background:#dcfce7;color:#166534}
+  .chip.nein{background:#fee2e2;color:#b91c1c}
+  .tel{display:inline-block;margin-top:9px;padding:8px 13px;border-radius:9px;
+       background:#eef0fe;color:var(--blau);font-weight:650;
+       text-decoration:none;font-size:15px}
+  .kkarte .kl{margin-top:8px;color:var(--mut);font-size:13px}
+
+  .kform{background:var(--s1);border-radius:12px;padding:15px;
+         box-shadow:0 1px 3px rgba(18,22,45,.07)}
+  .kform .zeile{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:11px}
+  .kform .fg{flex:1 1 150px;display:flex;flex-direction:column;gap:4px}
+  .kform .fg label{font-size:12px;color:var(--mut);font-weight:700}
+  .kform input,.kform select{width:100%;padding:10px;font-size:15px;
+       border:1px solid var(--line);border-radius:8px;font-family:inherit;background:var(--s1)}
+  .tage{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:11px}
+  .tage .fg{display:flex;flex-direction:column;gap:4px}
+  .tage label{font-size:12px;color:var(--mut);font-weight:700}
+  .tage select,.tage input{width:100%;padding:9px;font-size:14.5px;
+       border:1px solid var(--line);border-radius:8px;font-family:inherit;background:var(--s1)}
+  .kakt{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .kakt .btn{flex:1 1 130px;padding:12px;font-size:15px}
+  .abm{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+  .kzeiten{margin-top:7px;font-size:12.5px;color:var(--mut)}
+  @media (max-width:600px){ .tage{grid-template-columns:repeat(2,1fr)} }
+  .modus{display:flex;gap:6px;margin-bottom:10px}
+  .modus div{flex:1;text-align:center;padding:10px 8px;border-radius:10px;background:var(--s3);
+             font-weight:650;font-size:14px;cursor:pointer;color:var(--mut)}
+  .modus div.an{background:var(--blau);color:#fff}
+  .wo{margin-top:10px;border-radius:10px;padding:11px 13px}
+  .wo .gross{font-size:21px;font-weight:800;line-height:1.2}
+  .wo .klein{font-size:13.5px;margin-top:3px;line-height:1.4}
+  .wo.ok{background:#dcfce7;color:#14532d}
+  .wo.e{background:#fef9c3;color:#713f12}
+  .wo.f{background:#fee2e2;color:#7f1d1d}
+  .wo.offen{background:var(--s2);color:var(--text)}
+  .wo.jetzt{background:#dbeafe;color:#1e3a8a}
+  .sfilter{display:flex;gap:6px;flex-wrap:wrap;margin:0 2px 10px}
+  .sfilter span{padding:6px 12px;border-radius:99px;background:var(--s3);
+                font-size:13px;font-weight:600;color:var(--mut);cursor:pointer}
+  .sfilter span.an{background:var(--blau);color:#fff}
+  .sstand{display:flex;align-items:center;justify-content:space-between;gap:8px;
+          margin:0 2px 8px;font-size:12px;color:var(--mut)}
+
+  .h{font-size:13px;font-weight:700;color:var(--mut);margin:18px 2px 8px}
+  .info{padding:36px 20px;text-align:center;color:var(--mut);font-size:14px}
+  .info.rot{color:var(--warn);font-weight:600}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);
+         background:#065f46;color:#fff;padding:12px 18px;border-radius:12px;
+         font-size:14.5px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);
+         opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+         z-index:90;max-width:92vw;text-align:center}
+  .toast.auf{opacity:1;transform:translate(-50%,0)}
+  .toast.rot{background:#b91c1c}
+
+  /* ---------- Dunkelmodus nach Geräte-Einstellung ---------- */
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0f1320;--s1:#171c2c;--s2:#1e2437;--s3:#262d44;
+      --line:#2a3148;--text:#e6e8f0;--mut:#98a0b3;
+      --blau:#6366f1;--ok:#10b981;--warn:#f87171;--gelb:#fbbf24;
+      --linV:#3a4260;--linH:#283049;--linQ:#1f2538;
+      color-scheme:dark;
+    }
+    header,.tabs,.leiste{background:var(--s1);border-color:var(--line)}
+    .logo.h{display:none}
+    .logo.d{display:block}
+    input,select{background:var(--s2)!important;color:var(--text);border-color:var(--line)!important}
+    .btn.hell{background:var(--s3);color:var(--text)}
+    .btn.rot{background:rgba(220,38,38,.18);color:#fca5a5}
+    .tab.an{color:#a5b4fc;border-bottom-color:#a5b4fc}
+    .zeit{background:var(--s3);color:var(--text)}
+    .karte,.rahmen,.box,.zeile-form,.trow,.kkarte,.gruss,.vtag,.abwzeile{
+      background:var(--s1);box-shadow:0 1px 0 rgba(255,255,255,.03),0 2px 8px rgba(0,0,0,.35)}
+    .kopf{border-bottom-color:var(--linV)}
+    .pk,.sp{border-left-color:var(--linH)}
+    .pk.prakt{background:#1b2031}.sp.prakt{background:#141827}
+    .chip{background:var(--s3);color:#c3c8d6}
+    .chip.abhol{background:rgba(234,179,8,.18);color:#fde047}
+    .chip.but{background:rgba(22,163,74,.22);color:#86efac}
+    .chip.ez{background:rgba(2,132,199,.25);color:#7dd3fc}
+    .chip.emp,.chip.raum{background:rgba(124,58,237,.28);color:#c4b5fd}
+    .chip.warn{background:rgba(245,158,11,.18);color:#fcd34d}
+    .chip.fest{background:var(--s3);color:#c3c8d6}
+    .chip.ok{background:rgba(22,163,74,.22);color:#86efac}
+    .chip.nein{background:rgba(220,38,38,.22);color:#fca5a5}
+    .ein .plus{background:var(--s1);color:#c4b5fd;border-color:#7c3aed}
+    .balken{background:var(--s3)}
+    .modal{background:rgba(0,0,0,.65)}
+    .wahl{border-color:var(--line)}
+    .opt:hover{background:var(--s2)}
+    .opt.an{background:rgba(99,102,241,.22);color:#c7d2fe}
+    .opt.sperr{background:transparent;color:#5b6278}
+    .tg.rot{background:rgba(220,38,38,.22);color:#fca5a5}
+    .tg.gruen{color:#6ee7b7}
+    .tg.grau{background:var(--s3);color:#c3c8d6}
+    .kliste{background:var(--s2)}
+    .kind{border-bottom-color:var(--line)}
+    .kwer{color:#a5b4fc}
+    table.t{background:var(--s1)}
+    table.t th{background:var(--s2)}
+    table.t td{border-top-color:var(--line)}
+    .hinw.ok{background:rgba(16,185,129,.12);color:#6ee7b7}
+    .hinw.no{background:rgba(245,158,11,.12);color:#fcd34d}
+    .trow.aus{background:transparent;border:1px dashed var(--line)}
+    .trow.aus b{color:#5b6278}
+    .schalter{background:#3a4260}
+    .tel{background:rgba(99,102,241,.2);color:#c7d2fe}
+    .toast{background:#047857}
+    .toast.rot{background:#b91c1c}
+    .warnbox{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#fcd34d}
+  }
+  @media (prefers-color-scheme:dark){
+    .karte.ich{background:#1b2036}
+    .pk.ich{background:#262c4a}.pk.ich .pn{color:#c7d2fe}
+    .sp.ich{background:#181d30}
+    .gruss{border-left-color:#6366f1}
+    .anwbox{border-top-color:var(--line)}
+    .kid{background:var(--s2)}
+    .kid.ok{background:rgba(22,163,74,.2);border-color:#16a34a;color:#bbf7d0}
+    .kid.e{background:rgba(202,138,4,.2);border-color:#ca8a04;color:#fef08a}
+    .kid.f{background:rgba(220,38,38,.2);border-color:#dc2626;color:#fecaca}
+    .anwzu{background:rgba(16,185,129,.12)}
+    .anwzu .t1{color:#6ee7b7}.anwzu .t2{color:var(--text)}
+    .s-ok{color:#86efac}.s-e{color:#fde047}.s-f{color:#fca5a5}
+    .w3.ok{background:rgba(22,163,74,.22);color:#86efac}
+    .w3.e{background:rgba(202,138,4,.22);color:#fde047}
+    .w3.f{background:rgba(220,38,38,.22);color:#fca5a5}
+    .zu.hellzu{background:var(--s3);color:var(--text)}
+  }
+  @media (prefers-color-scheme:dark){
+    .st.ok{background:rgba(22,163,74,.22);color:#86efac}
+    .st.e{background:rgba(202,138,4,.22);color:#fde047}
+    .st.f{background:rgba(220,38,38,.22);color:#fca5a5}
+    .st.offen{background:var(--s3);color:#98a0b3}
+  }
+
+  @media (prefers-color-scheme:dark){
+    .wo.ok{background:rgba(22,163,74,.2);color:#bbf7d0}
+    .wo.e{background:rgba(202,138,4,.2);color:#fef08a}
+    .wo.jetzt{background:rgba(59,130,246,.22);color:#bfdbfe}
+    .wo.f{background:rgba(220,38,38,.22);color:#fecaca}
+  }
+
+  @media (max-width:600px){
+    header{padding:10px 12px}
+    .titel{font-size:17px}
+    .tabs{padding:0 8px}
+    .tab{padding:11px 10px;font-size:13px}
+    main{padding:10px}
+    .karte{min-width:0;max-width:none;flex:1 1 100%}
+    .pk,.sp{width:104px}
+    .ecke,.achse{width:52px}
+    .box{max-width:none;padding:15px}
+    .gruss .g1{font-size:19px}
+  }
+</style>
+</head>
+<body>
+
+<div class="oben">
+<header>
+  <div class="kopfz">
+    <div>
+     <!-- NEU: -->
+<div class="titel" id="titel">Hallo</div>
+<div class="sub" id="sub">Lade...</div>
+    </div>
+    <button class="kspunkt" id="ksPunkt" onclick="ksZeigen()" title="Kinderschutz">!</button>
+    <button class="glocke" onclick="meldungenZeigen()" title="Meldungen der Eltern">
+      &#128276;<span class="punkt" id="punkt"></span></button>
+    <button class="glocke" onclick="internZeigen()" title="Interne Nachrichten">
+      &#128172;<span class="punkt" id="punktI"></span></button>
+    <img class="logo h" title="Aktualisieren" onclick="logoTippen()" alt="PGM Bildungszentrum" src="data:image/png;base64,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">
+    <img class="logo d" title="Aktualisieren" onclick="logoTippen()" alt="PGM Bildungszentrum" src="data:image/png;base64,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">
+  </div>
+  <div class="steuer" id="steuer">
+    <button class="btn hell" onclick="tagWechsel(-1)">&lsaquo;</button>
+    <input type="date" id="datum" onchange="laden()">
+    <button class="btn hell" onclick="tagWechsel(1)">&rsaquo;</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab an" id="tabPlan" onclick="wechsel('plan')">Mein Plan</div>
+  <div class="tab" id="tabKind" onclick="wechsel('kind')">Kinder</div>
+  <div class="tab" id="tabVerf" onclick="wechsel('verf')">Meine Zeiten</div>
+  <div class="tab" id="tabAbw" onclick="wechsel('abw')">Abwesend</div>
+  <div class="tab" id="tabTeam" onclick="wechsel('team')" style="display:none">Team</div>
+</div>
+</div>
+
+<main id="inhalt"><div class="info">Lade...</div></main>
+<div class="abmelde" id="abmeldeZeile">
+  <button onclick="abmeldenKlick()">Abmelden</button>
+</div>
+
+
+<div class="modal" id="modal" onclick="if(event.target.id==='modal')zu()">
+  <div class="box" id="box"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+// ================= Verbindung zum Server =================
+// Diese Seite laeuft an zwei Orten: in Apps Script, wo es
+// google.script.run gibt, und als normale Datei auf GitHub Pages, wo es
+// das nicht gibt. Der Block unten baut auf GitHub einen Ersatz, der von
+// aussen genauso aussieht. Deshalb musste keiner der vielen Aufrufe im
+// Rest der Datei angefasst werden.
+
+// ▼▼▼ NUR DIESE ZEILE ANPASSEN ▼▼▼
+// Die Adresse der Apps-Script-App. Sie endet auf /exec und steht in
+// Apps Script unter: Bereitstellen -> Bereitstellungen verwalten.
+var SERVER = 'HIER_DIE_EXEC_ADRESSE_EINTRAGEN';
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+var AUF_GITHUB = !(typeof google !== 'undefined' &&
+                   google.script && google.script.run);
+
+// kleiner Speicher im Handy, in manchen Browsern gesperrt
+function merkeLesen(k){ try{ return localStorage.getItem(k) || ''; }catch(e){ return ''; } }
+function merkeSchreiben(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function merkeLoeschen(k){ try{ localStorage.removeItem(k); }catch(e){} }
+
+// Namen, die der Server annimmt. Die Liste muss zu API_ERLAUBT in
+// WebApp.gs passen. Kommt ein Name dazu, hier und dort eintragen.
+var AUFRUFE = ['abmelden','abrechnungPdf','abwesendHinzu','abwesendLoeschen',
+  'codeAnfordern','codePruefen','ehrenFuer','ehrenHinzu','ehrenLoeschen',
+  'elternStart','festHinzu','festLoeschen','internGesehen','kindAbmelden',
+  'kindPruefen','kindSpeichern','kinderDaten','kinderStamm','kinderSuche',
+  'ksBestaetigen','ksErinnern','ksStand','ksUnterschrift','ladeDashboard',
+  'ladeTag','loescheAbwesend','loescheTag','meinTag','meineAbwesenheiten',
+  'meldeAbwesend','meldungAntwort','meldungGesehen','meldungIntern',
+  'meldungSenden','mitarbeiterSpeichern','mitteilungSenden','monatBerechnen',
+  'monatSpeichern','nachrichtEmpfaenger','nachrichtSenden','personSpeichern',
+  'setzeAnwesend','speicherePlan','speichereVerfuegbarkeit','tagAlle',
+  'teamListe','werBinIch'];
+
+if (AUF_GITHUB) (function(){
+
+  function fehler(no, text){
+    if (no) { try{ no({ message: text }); }catch(e){} }
+  }
+
+  function senden(name, args, ok, no){
+    if (SERVER.indexOf('http') !== 0){
+      fehler(no, 'Die Serveradresse ist noch nicht eingetragen.');
+      return;
+    }
+    fetch(SERVER, {
+      method: 'POST',
+      // text/plain, weil Apps Script die Vorabfrage OPTIONS nicht
+      // beantwortet. So gilt es als einfache Anfrage.
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn: name, args: args }),
+      redirect: 'follow'
+    })
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      var a;
+      try { a = JSON.parse(text); }
+      catch(e){
+        fehler(no, 'Der Server hat keine Daten geschickt. Bitte neu laden.');
+        return;
+      }
+      if (!a || !a.ok){ fehler(no, (a && a.fehler) || 'Unbekannter Fehler'); return; }
+      if (ok) { try{ ok(a.wert); }catch(e){ if(window.console) console.log(e); } }
+    })
+    .catch(function(e){
+      fehler(no, 'Keine Verbindung: ' + ((e && e.message) || e));
+    });
+  }
+
+  // Jeder Aufruf bekommt seinen eigenen Lauf. Sonst wuerden sich zwei
+  // gleichzeitige Aufrufe die Handler gegenseitig ueberschreiben.
+  function neuerLauf(){
+    var ok = null, no = null;
+    var lauf = {
+      withSuccessHandler: function(f){ ok = f; return lauf; },
+      withFailureHandler: function(f){ no = f; return lauf; }
+    };
+    for (var i=0;i<AUFRUFE.length;i++){
+      (function(name){
+        lauf[name] = function(){
+          senden(name, Array.prototype.slice.call(arguments), ok, no);
+        };
+      })(AUFRUFE[i]);
+    }
+    return lauf;
+  }
+
+  var skript = {};
+  Object.defineProperty(skript, 'run', { get: neuerLauf });
+  window.google = { script: skript };
+})();
+
+// Symbol, Name und Offline-Betrieb fuer die Installation auf dem
+// Startbildschirm. Das gibt es nur auf GitHub, in Apps Script laeuft die
+// Seite in einem fremden Rahmen und nichts davon wuerde greifen.
+function appAnmelden(kurz, nurSymbol){
+  function kopf(tag, werte){
+    var el = document.createElement(tag);
+    for (var k in werte) el.setAttribute(k, werte[k]);
+    document.head.appendChild(el);
+  }
+  kopf('link', { rel:'icon', type:'image/png', href:'icons/' + kurz + '-64.png' });
+  // Die Elternseite soll niemand auf den Startbildschirm legen, dort
+  // reicht das Symbol im Reiter.
+  if (nurSymbol) return;
+  kopf('link', { rel:'manifest', href:'manifest-' + kurz + '.json' });
+  kopf('link', { rel:'apple-touch-icon', href:'icons/' + kurz + '-180.png' });
+  kopf('meta', { name:'theme-color', content:'#ffffff' });
+  kopf('meta', { name:'mobile-web-app-capable', content:'yes' });
+  kopf('meta', { name:'apple-mobile-web-app-capable', content:'yes' });
+  kopf('meta', { name:'apple-mobile-web-app-status-bar-style', content:'default' });
+  kopf('meta', { name:'apple-mobile-web-app-title',
+                 content: kurz === 'planer' ? 'PGM Planer' : 'Mein PGM' });
+  if (navigator.serviceWorker) {
+    try { navigator.serviceWorker.register('sw.js'); } catch(e){}
+  }
+}
+
+if (AUF_GITHUB) appAnmelden('pgm');
+// ================= Ende der Verbindung =================
+
+var TOKEN = '<?= token ?>';
+var ICH = '<?= name ?>';
+// In Apps Script setzt die Vorlage diese zwei Werte ein. Liegt die Seite auf
+// GitHub, bleibt der Platzhalter als Text stehen.
+// Die Zeichenfolge wird zusammengesetzt. Stuende sie am Stueck da,
+// haelt die Vorlagen-Maschine von Apps Script sie fuer den Anfang
+// eines Platzhalters und die ganze Seite bricht beim Rendern ab.
+if (!TOKEN || TOKEN.indexOf('<' + '?=') >= 0) {
+  var urlParams = new URLSearchParams(window.location.search);
+  TOKEN = urlParams.get('t') || merkeLesen('pgm_token');
+}
+if (!ICH || ICH.indexOf('<' + '?=') >= 0) ICH = merkeLesen('pgm_name');
+
+// Auf GitHub bleibt die Anmeldung im Handy gespeichert, damit man sich
+// nicht jeden Tag neu anmelden muss.
+if (AUF_GITHUB) {
+  if (!TOKEN) { location.replace('index.html'); }
+  else merkeSchreiben('pgm_token', TOKEN);
+}
+
+// Holt Name und Rolle nach, wenn die Seite sie nicht mitgeliefert bekam.
+function starteName(){
+  if (!TOKEN || ICH) { nameSetzen(ICH); return; }
+  google.script.run
+    .withSuccessHandler(function(w){
+      nameSetzen(w && w.name);
+      if (w) merkeSchreiben('pgm_admin', w.admin ? '1' : '0');
+      rollePruefen(w && w.admin);
+    })
+    .withFailureHandler(function(e){
+      var t = String((e && e.message) || '');
+      // Token ungueltig oder abgelaufen: Anmeldung von vorn
+      if (AUF_GITHUB && (t.indexOf('Kein Zugriff') >= 0 ||
+                         t.indexOf('Berechtigung') >= 0)) {
+        merkeLoeschen('pgm_token'); merkeLoeschen('pgm_name');
+        location.replace('index.html');
+      }
+    })
+    .werBinIch(TOKEN);
+}
+
+// Abmelden, damit ein falscher Zugang nicht im Handy kleben bleibt
+function abmeldenKlick(){
+  merkeLoeschen('pgm_token'); merkeLoeschen('pgm_name');
+  merkeLoeschen('pgm_admin');
+  google.script.run.withSuccessHandler(function(){}).abmelden(TOKEN);
+  if (AUF_GITHUB) location.replace('index.html');
+}
+
+// Begruessung im Header setzen
+function nameSetzen(n){
+  ICH = n || ICH || '';
+  if (!ICH) return;
+  merkeSchreiben('pgm_name', ICH);
+  var titelEl = document.getElementById('titel');
+  var subEl = document.getElementById('sub');
+  if (titelEl) titelEl.textContent = 'Hallo ' + ICH.split(' ')[0];
+  if (subEl && subEl.textContent === 'Lade...') subEl.textContent = ICH;
+}
+// Auf der Betreuerseite darf jeder sein, hier ist nichts zu pruefen
+function rollePruefen(admin){}
+starteName();
+
+// Die Abmeldezeile braucht nur die Fassung auf GitHub. In Apps Script
+// haengt die Anmeldung am Link, da gibt es nichts abzumelden.
+if (AUF_GITHUB) {
+  var azEl = document.getElementById('abmeldeZeile');
+  if (azEl) azEl.style.display = 'block';
+}
+var TAGE=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+var WOCHE=[['Mo','Montag'],['Di','Dienstag'],['Mi','Mittwoch'],['Do','Donnerstag']];
+var START=690, ENDE=945, PXH=140;
+var daten=null, ansicht='plan', verf={}, liste=[], anw={}, anwOffen={};
+var toastT=null;
+var CHEF=false;
+
+window.onerror=function(m,u,l){ zeigeInfo('Fehler Zeile '+l+': '+m, true); };
+
+// Startdatum: ab 16 Uhr der naechste Betreuungstag, Fr/Sa/So immer Montag
+function startDatum(){
+  var d=new Date();
+  if(d.getHours()>=16) d.setDate(d.getDate()+1);
+  while(d.getDay()<1 || d.getDay()>4) d.setDate(d.getDate()+1);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+}
+
+document.getElementById('datum').value=startDatum();
+
+// ---------- Hilfen ----------
+
+function zeigeInfo(t,rot){
+  document.getElementById('inhalt').innerHTML=
+    '<div class="info'+(rot?' rot':'')+'">'+t+'</div>';
+}
+function toast(t,rot){
+  var e=document.getElementById('toast');
+  e.textContent=(rot?'':'\u2713 ')+t;
+  e.className='toast auf'+(rot?' rot':'');
+  clearTimeout(toastT);
+  toastT=setTimeout(function(){ e.className='toast'+(rot?' rot':''); }, rot?5000:3000);
+}
+function laeuft(btn,text){
+  if(!btn) return function(){};
+  var alt=btn.innerHTML;
+  btn.disabled=true; btn.innerHTML=text||'Speichert...';
+  return function(){ btn.disabled=false; btn.innerHTML=alt; };
+}
+function min(z){
+  var s=String(z||'').split('/')[0].replace(/^\s+|\s+$/g,'').split(':');
+  var a=parseInt(s[0],10), b=parseInt(s[1],10);
+  return (isNaN(a)||isNaN(b))?0:a*60+b;
+}
+function hhmm(m){return ('0'+Math.floor(m/60)).slice(-2)+':'+('0'+(m%60)).slice(-2);}
+function y(m){return (m-START)/60*PXH;}
+function trim(s){return String(s||'').replace(/^\s+|\s+$/g,'');}
+function q(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+function namenVon(s){
+  var raus=[], t=String(s||'').split(',');
+  for(var i=0;i<t.length;i++){ var n=trim(t[i]); if(n) raus.push(n); }
+  return raus;
+}
+function istPrakt(n){
+  if(!daten || !daten.praktikanten) return false;
+  return daten.praktikanten.indexOf(n)>=0;
+}
+function heuteStr(){
+  var d=new Date();
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+}
+function tagWechsel(n){
+  var i=document.getElementById('datum');
+  var d=new Date(i.value); d.setDate(d.getDate()+n);
+  i.value=d.toISOString().slice(0,10); laden();
+}
+function wechsel(a){
+  ansicht=a;
+  document.getElementById('tabPlan').className='tab'+(a==='plan'?' an':'');
+  document.getElementById('tabVerf').className='tab'+(a==='verf'?' an':'');
+  document.getElementById('tabAbw').className='tab'+(a==='abw'?' an':'');
+  document.getElementById('tabKind').className='tab'+(a==='kind'?' an':'');
+  document.getElementById('tabTeam').className='tab'+(a==='team'?' an':'');
+  document.getElementById('steuer').style.display=(a==='plan'?'flex':'none');
+  if(a==='kind'){ zeigeSuche(); return; }
+  if(a==='abw'){ zeigeAbw(); return; }
+  if(a==='team'){ zeigeTeam(); return; }
+  zeichne();
+}
+function hol(id){
+  for(var i=0;i<liste.length;i++) if(liste[i].id===id) return liste[i];
+  return null;
+}
+
+// Abholung: 45 Minuten, außer die Person hat direkt danach einen Einsatz
+function endeFuer(name,j){
+  if(j.art!=='Abholung') return j.bis;
+  var naechst=null;
+  for(var i=0;i<liste.length;i++){
+    var x=liste[i];
+    if(x===j || x.leute.indexOf(name)<0) continue;
+    if(x.von>=j.bis && (naechst===null || x.von<naechst)) naechst=x.von;
+  }
+  var ende=j.bis+15;
+  if(naechst!==null && naechst<ende) ende=naechst;
+  return ende;
+}
+
+// ---------- Laden ----------
+
+// Tippen auf das Logo laedt den Tag neu
+function logoTippen(){
+  var els=document.querySelectorAll('.logo');
+  for(var i=0;i<els.length;i++){
+    els[i].classList.remove('dreht'); void els[i].offsetWidth; els[i].classList.add('dreht');
+  }
+  laden();
+}
+
+function laden(){
+  zeigeInfo('Lade...');
+  google.script.run
+    .withSuccessHandler(empfangen)
+    .withFailureHandler(function(e){ zeigeInfo(e.message, true); })
+    .meinTag(TOKEN, document.getElementById('datum').value);
+}
+
+// holt den ganzen Tagesplan nach. Vorher hat die App nur die eigenen
+// Einsaetze geladen, das macht den Start deutlich schneller.
+function ganzenPlanLaden(btn){
+  var fertig=laeuft(btn,'Lädt...');
+  google.script.run
+    .withSuccessHandler(function(d){
+      fertig();
+      if(!daten) return;
+      daten.alle=d.alle; daten.nurMeine=false;
+      aufbauen(); zeichne(); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .tagAlle(TOKEN, document.getElementById('datum').value);
+}
+
+function empfangen(d){
+  try{
+    if(!d){ zeigeInfo('Keine Daten erhalten', true); return; }
+    daten=d;
+    verf={};
+    var v=d.verfuegbarkeit||[];
+    for(var i=0;i<v.length;i++) verf[v[i].tag]={von:v[i].von, bis:v[i].bis};
+    aufbauen();
+    document.getElementById('tabTeam').style.display=(d.darfTeam?'':'none');
+    zeichne();
+    glockeAktualisieren();
+  }catch(err){ zeigeInfo('Fehler beim Aufbau: '+err.message, true); }
+}
+
+function aufbauen(){
+  liste=[];
+  anw=(daten && daten.anwesend) ? daten.anwesend : {};
+  anwOffen={};
+
+  var alle=(daten && daten.alle) ? daten.alle : [];
+  for(var i=0;i<alle.length;i++){
+    var z=alle[i];
+    var art=String(z.art||z.aufgabe||'');
+    var von=min(z.von || z.zeit);
+    if(!von || von<START) von=START;
+    var bis=z.bis ? min(z.bis) : (art==='Abholung' ? von+30 : von+90);
+    if(bis<=von) bis=von+30;
+    var leute=namenVon(z.mitarbeiter);
+
+    liste.push({
+      id:'e'+i, art:art,
+      titel:z.titel || art, kurz:z.kurz || art,
+      von:von, bis:bis,
+      raum:String(z.raum||''), schule:String(z.schule||''),
+      zeit:String(z.zeit||''),
+      leute:leute, kinder:namenVon(z.kinder),
+      kinderInfo:z.kinderInfo||[],
+      meins:leute.indexOf(daten.name)>=0
+    });
+  }
+  liste.sort(function(a,b){ return a.von-b.von; });
+}
+
+function kindKey(j,k){ return k.name+'|'+(k.schule||j.schule)+'|'+k.klasse; }
+function alleErfasst(j){
+  for(var i=0;i<j.kinderInfo.length;i++)
+    if(!anw[kindKey(j,j.kinderInfo[i])]) return false;
+  return j.kinderInfo.length>0;
+}
+
+
+// ---------- Anwesenheit anzeigen ----------
+function anwStatus(k,schule){
+  var a=(daten && daten.anwesend) || {};
+  return a[k.name+'|'+(k.schule||schule||'')+'|'+k.klasse] || '';
+}
+function stBadge(s){
+  if(s==='\u2713') return '<span class="st ok">\u2713 da</span>';
+  if(s==='E') return '<span class="st e">E entschuldigt</span>';
+  if(s==='F') return '<span class="st f">F fehlt</span>';
+  return '<span class="st offen">offen</span>';
+}
+function stSumme(kinder,schule){
+  var da=0,e=0,f=0,o=0;
+  for(var i=0;i<kinder.length;i++){
+    var s=anwStatus(kinder[i],schule);
+    if(s==='\u2713') da++; else if(s==='E') e++; else if(s==='F') f++; else o++;
+  }
+  return '<div class="stsum"><b class="s1">'+da+' da</b><span>'+e+' entschuldigt</span>'+
+         '<span>'+f+' fehlt</span><span>'+o+' offen</span></div>';
+}
+
+// ---------- Mein Plan ----------
+
+function grussHtml(meine){
+  var d=new Date(daten.datum);
+  var heute=(daten.datum===heuteStr());
+  var tagT=TAGE[d.getDay()]+', '+('0'+d.getDate()).slice(-2)+'.'+
+           ('0'+(d.getMonth()+1)).slice(-2)+'.';
+  var wann=heute?'heute':'am '+tagT;
+  var satz;
+  if(!daten.freigegeben){
+    satz='für '+(heute?'heute':tagT)+' ist noch kein Plan freigegeben.';
+  }else if(!meine.length){
+    satz='du hast '+wann+' keinen Einsatz.';
+  }else{
+    satz='du hast '+wann+' '+meine.length+(meine.length===1?' Einsatz.':' Einsätze.');
+  }
+  return '<div class="gruss"><div class="g2">'+
+         satz.charAt(0).toUpperCase()+satz.slice(1)+'</div></div>';
+}
+
+/* Arbeitsbeginn, Arbeitsende und Gesamtdauer eines Tages */
+function spanne(meine){
+  if(!meine || !meine.length) return null;
+  var anfang=meine[0].von, schluss=0;
+  for(var i=0;i<meine.length;i++){
+    if(meine[i].von<anfang) anfang=meine[i].von;
+    var e=endeFuer(daten.name,meine[i]);
+    if(e>schluss) schluss=e;
+  }
+  return {von:anfang, bis:schluss, dauer:schluss-anfang};
+}
+
+function kurzDatum(d){
+  return ('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.';
+}
+
+function dauerText(d){
+  var st=Math.floor(d/60), mi=d%60;
+  return mi===0 ? st+' Std' : st+':'+('0'+mi).slice(-2)+' Std';
+}
+
+function zeichne(){
+  if(!daten) return;
+  if(ansicht==='kind' || ansicht==='abw' || ansicht==='team') return;
+  if(ansicht==='verf'){ zeichneVerf(); return; }
+
+  try{
+    var dat=new Date(daten.datum);
+
+    var meine=[];
+    for(var m=0;m<liste.length;m++) if(liste[m].meins) meine.push(liste[m]);
+
+    var sp = daten.freigegeben ? spanne(meine) : null;
+    document.getElementById('sub').textContent=
+      TAGE[dat.getDay()]+', '+kurzDatum(dat)+
+      (sp ? ' \u00b7 '+hhmm(sp.von)+'\u2013'+hhmm(sp.bis)+' \u00b7 '+
+            dauerText(sp.dauer) : '');
+
+    var h=grussHtml(meine);
+
+    if(!daten.freigegeben){
+      document.getElementById('inhalt').innerHTML=h;
+      return;
+    }
+
+    if(meine.length){
+      h+='<div class="abschnitt"><div class="akopf">'+
+         '<span class="atitel">Mein Einsatz</span>'+
+         '<span class="azahl">'+meine.length+'</span>'+
+         '<span class="alinie"></span></div>';
+      var letzte=-1;
+      for(var b=0;b<meine.length;b++){
+        if(meine[b].von!==letzte){
+          if(letzte>=0) h+='</div></div>';
+          h+='<div class="zgruppe"><span class="zeit">'+
+             hhmm(meine[b].von)+' - '+hhmm(endeFuer(daten.name,meine[b]))+
+             '</span><div class="reihe">';
+          letzte=meine[b].von;
+        }
+        h+=karteHtml(meine[b]);
+      }
+      h+='</div></div></div>';
+    }
+
+    h+='<div class="abschnitt"><div class="akopf">'+
+       '<span class="atitel">Ganzer Tag</span>'+
+       '<span class="azahl">'+(daten.nurMeine?(daten.anzahlAlle||0):liste.length)+
+       ' Einsätze</span><span class="alinie"></span></div>'+
+       (daten.nurMeine
+         ? '<button class="btn hell" style="width:100%" '+
+           'onclick="ganzenPlanLaden(this)">Ganzen Plan anzeigen</button>'
+         : rasterHtml())+'</div>';
+
+    document.getElementById('inhalt').innerHTML=h;
+  }catch(err){ zeigeInfo('Fehler beim Zeichnen: '+err.message, true); }
+}
+
+function karteHtml(j){
+  var cls=j.art==='BUT'?'but':(j.art==='EZ'?'ez':(j.art==='Empfang'?'emp':'abhol'));
+  var andere=[];
+  for(var k=0;k<j.leute.length;k++)
+    if(j.leute[k]!==daten.name) andere.push(j.leute[k]);
+  var ende=j.meins?endeFuer(daten.name,j):j.bis;
+
+  var h='<div class="karte '+j.art+(j.meins?' ich':'')+
+        '" onclick="oeffne(\''+j.id+'\')">'+
+        '<div class="knopf"><span class="kname">'+j.titel+'</span>'+
+        '<span class="kzeit">'+hhmm(j.von)+' - '+hhmm(ende)+'</span></div>'+
+        '<div class="krow">'+
+        (j.art==='Empfang'
+          ? '<span class="chip emp">am Eingang</span>'
+          : '<span class="chip '+cls+'">'+j.kinder.length+' Kinder</span>')+
+        (j.schule?'<span class="chip">'+j.schule+'</span>':'')+
+        (j.raum?'<span class="chip raum">'+j.raum+'</span>':'')+
+        '</div>';
+  if(andere.length) h+='<div class="wer">Mit: <b>'+andere.join(', ')+'</b></div>';
+
+  if(j.meins && j.art==='Abholung' && j.kinderInfo.length) h+=anwesenheitHtml(j);
+  return h+'</div>';
+}
+
+function zielGruppen(j){
+  var g={}, reihen=[];
+  for(var b=0;b<j.kinderInfo.length;b++){
+    var z=j.kinderInfo[b].ziel||null;
+    var key=z?(z.raum+'|'+z.titel):'-';
+    if(!g[key]){ g[key]={ziel:z, idx:[]}; reihen.push(g[key]); }
+    g[key].idx.push(b);
+  }
+  reihen.sort(function(x,c){
+    if(!x.ziel) return 1; if(!c.ziel) return -1;
+    return String(x.ziel.raum||'zzz').localeCompare(String(c.ziel.raum||'zzz'));
+  });
+  return reihen;
+}
+function zielText(z){
+  if(!z) return 'Keine Gruppe im Plan';
+  return (z.raum||'Raum noch offen')+', '+z.titel+(z.wer?' bei '+z.wer:'');
+}
+
+function anwesenheitHtml(j){
+  var heute=(daten.datum===heuteStr());
+  var ok=0, e=0, f=0;
+  for(var a=0;a<j.kinderInfo.length;a++){
+    var st=anw[kindKey(j,j.kinderInfo[a])];
+    if(st==='\u2713') ok++; else if(st==='E') e++; else if(st==='F') f++;
+  }
+  var n=ok+e+f;
+  var reihen=zielGruppen(j);
+
+  // alles erfasst: zugeklappt, nur noch wer in welchen Raum geht
+  if(n===j.kinderInfo.length && !anwOffen[j.id]){
+    var h='<div class="anwbox"><div class="anwzu"><div>'+
+          '<div class="t1">Anwesenheit erledigt</div>'+
+          '<div class="t2"><b class="s-ok">\u2713 '+ok+'</b><b class="s-e">E '+e+'</b>'+
+          '<b class="s-f">F '+f+'</b></div></div>'+
+          (heute?'<button class="btn hell" onclick="event.stopPropagation();'+
+                 'anwOffen[\''+j.id+'\']=true;zeichne()">Bearbeiten</button>':'')+
+          '</div>';
+    for(var r=0;r<reihen.length;r++){
+      var namen=[];
+      for(var q=0;q<reihen[r].idx.length;q++){
+        var kd=j.kinderInfo[reihen[r].idx[q]];
+        if(anw[kindKey(j,kd)]==='\u2713') namen.push(kd.name);
+      }
+      if(namen.length)
+        h+='<div class="zielz"><b>'+zielText(reihen[r].ziel)+'</b>'+namen.join(', ')+'</div>';
+    }
+    return h+'</div>';
+  }
+
+  var h2='<div class="anwbox"><div class="abkopf"><span>Anwesenheit</span>'+
+         '<span>'+n+' / '+j.kinderInfo.length+'</span></div>';
+  for(var r2=0;r2<reihen.length;r2++){
+    h2+='<div class="zielkopf">'+zielText(reihen[r2].ziel)+'</div>';
+    for(var b=0;b<reihen[r2].idx.length;b++){
+      var i=reihen[r2].idx[b];
+      var k=j.kinderInfo[i];
+      var s=anw[kindKey(j,k)]||'';
+      var sc=s==='\u2713'?' ok':(s==='E'?' e blass':(s==='F'?' f blass':''));
+      h2+='<div class="kid'+sc+(heute?'':' aus')+'"'+
+          (heute?' onclick="event.stopPropagation();kindTippen(\''+j.id+'\','+i+')"':'')+
+          '><span>'+k.name+meldChip(k.name,k.schule||j.schule,k.klasse)+
+          '</span><span class="kk">'+k.klasse+
+          (s?'<b>'+s+'</b>':'')+'</span></div>'+
+          meldText(k.name,k.schule||j.schule,k.klasse);
+    }
+  }
+  if(!heute) h2+='<div class="kl2">Eintragen geht nur am selben Tag.</div>';
+  return h2+'</div>';
+}
+
+function kindTippen(id,i){
+  var j=hol(id); if(!j) return;
+  var k=j.kinderInfo[i];
+  var akt=anw[kindKey(j,k)]||'';
+  var h='<h3>'+k.name+'</h3><div class="wann">Klasse '+k.klasse+', '+j.schule+'</div>'+
+        '<div class="wahl3">'+
+        knopf3(id,i,'✓','anwesend','ok',akt)+
+        knopf3(id,i,'E','entschuldigt','e',akt)+
+        knopf3(id,i,'F','fehlt','f',akt)+
+        '</div><button class="zu hellzu" onclick="zu()">Abbrechen</button>';
+  document.getElementById('box').innerHTML=h;
+  document.getElementById('modal').className='modal auf';
+}
+
+function knopf3(id,i,wert,text,cls,akt){
+  return '<button class="w3 '+cls+(akt===wert?' an':'')+
+         '" onclick="setzeStatus(\''+id+'\','+i+',\''+wert+'\')">'+
+         '<b>'+wert+'</b><span>'+text+'</span></button>';
+}
+
+function setzeStatus(id,i,wert){
+  var j=hol(id); if(!j) return;
+  var k=j.kinderInfo[i];
+  var key=kindKey(j,k);
+  var alt=anw[key];
+  var warOffen=anwOffen[j.id];
+  anw[key]=wert;
+  var komplett=alleErfasst(j);
+  if(komplett) delete anwOffen[j.id];
+  zu(); zeichne();
+
+  var text=wert==='✓'?'anwesend':(wert==='E'?'entschuldigt':'fehlt');
+  google.script.run
+    .withSuccessHandler(function(){
+      toast(komplett ? 'Anwesenheit komplett eingetragen' : k.name+': '+text); })
+    .withFailureHandler(function(e){
+      if(alt) anw[key]=alt; else delete anw[key];
+      if(warOffen) anwOffen[j.id]=true;
+      zeichne();
+      toast('Nicht gespeichert: '+e.message,true); })
+    .setzeAnwesend(TOKEN, daten.datum, j.schule, j.zeit, k.name, k.klasse, wert);
+}
+
+function rasterHtml(){
+  var spalten=[];
+  for(var i=0;i<liste.length;i++){
+    for(var k=0;k<liste[i].leute.length;k++)
+      if(spalten.indexOf(liste[i].leute[k])<0) spalten.push(liste[i].leute[k]);
+  }
+  spalten.sort(function(x,z){
+    var px=istPrakt(x)?1:0, pz=istPrakt(z)?1:0;
+    if(px!==pz) return px-pz;
+    return String(x).localeCompare(String(z));
+  });
+  if(!spalten.length) return '<div class="info">Niemand eingeteilt.</div>';
+
+  var hoehe=y(ENDE);
+  var h='<div class="rahmen"><div class="raster"><div class="kopf">'+
+        '<div class="ecke"></div>';
+  for(var s=0;s<spalten.length;s++){
+    var cls=(spalten[s]===daten.name)?' ich':(istPrakt(spalten[s])?' prakt':'');
+    h+='<div class="pk'+cls+'"><div class="pn">'+spalten[s]+'</div></div>';
+  }
+  h+='</div><div class="koerper"><div class="achse" style="height:'+hoehe+'px">';
+  for(var t=START;t<=ENDE;t+=15)
+    h+='<div class="marke'+(t%60===0?' voll':'')+'" style="top:'+
+       Math.max(y(t)-7,0)+'px">'+hhmm(t)+'</div>';
+  h+='</div>';
+
+  for(var q=0;q<spalten.length;q++){
+    var wer=spalten[q];
+    var istIch=(wer===daten.name);
+    h+='<div class="sp'+(istIch?' ich':'')+'" style="height:'+hoehe+'px">';
+    for(var t2=START;t2<ENDE;t2+=15)
+      h+='<div class="lin '+(t2%60===0?'v':(t2%30===0?'h':'q'))+'" style="top:'+y(t2)+'px"></div>';
+
+    for(var e=0;e<liste.length;e++){
+      var j=liste[e];
+      if(j.leute.indexOf(wer)<0) continue;
+      var ende=endeFuer(wer,j);
+      var oben=y(j.von)+2;
+      var hoch=y(ende)-y(j.von)-4;
+      if(hoch<20) hoch=20;
+      h+='<div class="ein '+j.art+(istIch?'':' blass')+
+         '" style="top:'+oben+'px;height:'+hoch+'px"'+
+         ' onclick="oeffne(\''+j.id+'\')">'+
+         '<b>'+j.kurz+'</b>'+
+         '<span class="mi">'+hhmm(j.von)+'-'+hhmm(ende)+'</span>'+
+         (j.raum?'<br><span class="mi">'+j.raum+'</span>':'')+
+         (j.kinder.length?'<br><span class="mi">'+j.kinder.length+' Kinder</span>':'')+
+         '</div>';
+    }
+    h+='</div>';
+  }
+  return h+'</div></div></div>';
+}
+
+function oeffne(id){
+  var j=hol(id);
+  if(!j) return;
+  var ende=j.meins?endeFuer(daten.name,j):j.bis;
+  var h='<h3>'+j.titel+'</h3><div class="wann">'+
+        hhmm(j.von)+' bis '+hhmm(ende)+(j.schule?', '+j.schule:'')+'</div>';
+
+  if(j.art==='Empfang')
+    h+='<div class="feld"><label>Aufgabe</label><div class="wert">'+
+       'Am Eingang stehen und die Kinder in Empfang nehmen</div></div>';
+
+  if(j.raum)
+    h+='<div class="feld"><label>Raum</label><div class="wert">'+j.raum+'</div></div>';
+
+  h+='<div class="feld"><label>Eingeteilt</label><div class="wert">'+
+     (j.leute.join(', ')||'offen')+'</div></div>';
+
+  if(j.art!=='Empfang' && j.kinderInfo.length){
+    h+='<div class="feld"><label>'+j.kinderInfo.length+' Kinder</label>'+
+       stSumme(j.kinderInfo,j.schule)+'<div class="kliste">';
+    for(var k=0;k<j.kinderInfo.length;k++){
+      var ki=j.kinderInfo[k];
+      var kz=[ki.klasse, ki.schule||j.schule].filter(Boolean).join(', ');
+      h+='<div class="kind"><span>'+ki.name+
+         (kz?' <span style="color:var(--mut);font-size:12px">'+kz+'</span>':'')+
+         meldChip(ki.name,ki.schule||j.schule,ki.klasse)+
+         '</span>'+stBadge(anwStatus(ki,j.schule))+'</div>'+
+         meldText(ki.name,ki.schule||j.schule,ki.klasse);
+    }
+    h+='</div></div>';
+  }else if(j.art!=='Empfang'){
+    h+='<div class="feld"><label>'+j.kinder.length+' Kinder</label>'+
+       '<div class="kliste">';
+    for(var k2=0;k2<j.kinder.length;k2++)
+      h+='<div class="kind">'+j.kinder[k2]+'</div>';
+    h+='</div></div>';
+  }
+
+  h+='<button class="zu" onclick="zu()">Schließen</button>';
+  document.getElementById('box').innerHTML=h;
+  document.getElementById('modal').className='modal auf';
+}
+function zu(){ document.getElementById('modal').className='modal'; }
+
+// ---------- Meine Zeiten ----------
+
+function zeichneVerf(){
+  document.getElementById('sub').textContent='Wann kannst du arbeiten?';
+  var h='<div class="warnbox">Wenn du an einem Tag nicht kannst, schalte ihn '+
+        'hier rechtzeitig aus, bevor der Plan gemacht wird. Für einzelne Tage, '+
+        'zum Beispiel Arzttermin, nutze den Reiter Abwesend.</div>'+
+        '<div class="h">Meine Zeiten</div>';
+
+  for(var i=0;i<WOCHE.length;i++){
+    var kuerzel=WOCHE[i][0], name=WOCHE[i][1];
+    var v=verf[kuerzel];
+    h+='<div class="vtag"><div class="vkopf">'+
+       '<span class="vname">'+name+'</span>'+
+       '<div class="schalter'+(v?' an':'')+'" onclick="toggleTag(\''+
+       kuerzel+'\')"><i></i></div></div>';
+    if(v){
+      h+='<div class="vzeiten">'+
+         '<input type="time" value="'+v.von+'" onchange="setzeZeit(\''+
+         kuerzel+'\',\'von\',this.value)">'+
+         '<span>bis</span>'+
+         '<input type="time" value="'+v.bis+'" onchange="setzeZeit(\''+
+         kuerzel+'\',\'bis\',this.value)"></div>';
+    }
+    h+='</div>';
+  }
+  h+='<button class="btn primer" style="width:100%;padding:14px;margin-top:8px;'+
+     'font-size:15px" onclick="speichereZeiten(this)">Zeiten speichern</button>';
+  document.getElementById('inhalt').innerHTML=h;
+}
+
+function toggleTag(t){
+  if(verf[t]) delete verf[t];
+  else verf[t]={von:'12:00',bis:'15:45'};
+  zeichneVerf();
+}
+function setzeZeit(t,welche,wert){ if(verf[t]) verf[t][welche]=wert; }
+
+function speichereZeiten(btn){
+  var l=[];
+  for(var i=0;i<WOCHE.length;i++){
+    var k=WOCHE[i][0];
+    if(verf[k]) l.push({tag:k, von:verf[k].von, bis:verf[k].bis});
+  }
+  var fertig=laeuft(btn,'Speichert...');
+  google.script.run
+    .withSuccessHandler(function(){ fertig(); toast('Zeiten gespeichert'); })
+    .withFailureHandler(function(e){ fertig(); toast('Nicht gespeichert: '+e.message,true); })
+    .speichereVerfuegbarkeit(TOKEN, l);
+}
+
+// ---------- Abwesend ----------
+
+function zeigeAbw(){
+  document.getElementById('sub').textContent='Tage, an denen du nicht kannst';
+  var heute=heuteStr();
+  document.getElementById('inhalt').innerHTML=
+    '<div class="warnbox">Trag hier einzelne Tage ein, an denen du nicht kommen '+
+    'kannst, zum Beispiel Arzttermin oder Urlaub. Je früher, desto besser. '+
+    'Steht der Plan für den Tag schon, bekommt die Leitung automatisch Bescheid.</div>'+
+    '<div class="abwform">'+
+    '<input type="date" id="abwDatum" min="'+heute+'" value="'+heute+'">'+
+    '<input type="text" id="abwGrund" placeholder="Grund (freiwillig)">'+
+    '<button class="btn primer" onclick="abwEintragen(this)">Eintragen</button></div>'+
+    '<div class="h">Meine Abwesenheiten</div>'+
+    '<div id="abwListe"><div class="info">Lade...</div></div>';
+  abwLaden();
+}
+
+function abwLaden(){
+  google.script.run
+    .withSuccessHandler(function(l){
+      var el=document.getElementById('abwListe'); if(!el) return;
+      if(!l.length){ el.innerHTML='<div class="info">Keine Einträge.</div>'; return; }
+      var h='';
+      for(var i=0;i<l.length;i++){
+        var d=new Date(l[i].datum);
+        h+='<div class="abwzeile"><div><b>'+TAGE[d.getDay()]+', '+
+           d.toLocaleDateString('de-DE')+'</b>'+
+           (l[i].grund?'<div class="kl2">'+l[i].grund+'</div>':'')+'</div>'+
+           '<button class="btn hell" onclick="abwLoeschen(\''+l[i].datum+
+           '\',this)">Löschen</button></div>';
+      }
+      el.innerHTML=h;
+    })
+    .withFailureHandler(function(e){ toast(e.message,true); })
+    .meineAbwesenheiten(TOKEN);
+}
+
+function abwEintragen(btn){
+  var d=document.getElementById('abwDatum').value;
+  var g=document.getElementById('abwGrund').value;
+  if(!d){ toast('Bitte ein Datum wählen',true); return; }
+  var fertig=laeuft(btn,'Speichert...');
+  google.script.run
+    .withSuccessHandler(function(r){
+      fertig();
+      toast(r==='geplant'
+        ? 'Eingetragen. Der Plan stand schon, die Leitung wurde informiert'
+        : 'Abwesenheit eingetragen');
+      document.getElementById('abwGrund').value='';
+      abwLaden();
+    })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .meldeAbwesend(TOKEN, d, g);
+}
+
+function abwLoeschen(datum,btn){
+  var fertig=laeuft(btn,'Löscht...');
+  google.script.run
+    .withSuccessHandler(function(){ fertig(); toast('Abwesenheit gelöscht'); abwLaden(); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .loescheAbwesend(TOKEN, datum);
+}
+
+// ---------- Kind suchen ----------
+// Die Daten werden einmal geladen und dann im Handy gefiltert.
+// Das macht die Suche sofort, statt bei jedem Buchstaben zu warten.
+
+var sModus='wo', sSchule='', KDATEN=null, sLaedt=false;
+
+function zeigeSuche(){
+  // Der Name bleibt in der Kopfzeile stehen. Der Zusatz darunter sagt,
+  // wo man gerade ist.
+  var s=document.getElementById('sub');
+  if(s) s.textContent=sModus==='wo'?'Wo ist das Kind heute?':'Kontakt der Eltern';
+
+  document.getElementById('inhalt').innerHTML=
+    '<div class="modus">'+
+    '<div class="'+(sModus==='wo'?'an':'')+'" onclick="setzeModus(\'wo\')">Wo ist das Kind heute?</div>'+
+    '<div class="'+(sModus==='kontakt'?'an':'')+'" onclick="setzeModus(\'kontakt\')">Kontakt</div>'+
+    '</div>'+
+    '<div class="suche">'+
+    '<input type="text" id="sName" placeholder="Vor- oder Nachname" '+
+    'oninput="sucheFiltern()" autocomplete="off">'+
+    (darfKinder()?'<button class="btn primer" onclick="kindNeu()">+ Neues Kind</button>':'')+
+    '</div>'+
+    '<div id="sFilter"></div>'+
+    '<div id="sErgebnis"><div class="info">Lade...</div></div>';
+
+  var n=document.getElementById('sName'); if(n) n.focus();
+  if(KDATEN) { filterZeichnen(); sucheFiltern(); } else kDatenLaden();
+}
+
+function setzeModus(m){ sModus=m; zeigeSuche(); }
+
+function kDatenLaden(neu){
+  if(sLaedt) return;
+  sLaedt=true;
+  if(neu){
+    var el=document.getElementById('sErgebnis');
+    if(el) el.innerHTML='<div class="info">Lade...</div>';
+  }
+  google.script.run
+    .withSuccessHandler(function(d){
+      sLaedt=false; KDATEN=d;
+      if(ansicht!=='kind') return;
+      filterZeichnen(); sucheFiltern(); })
+    .withFailureHandler(function(e){
+      sLaedt=false;
+      var el=document.getElementById('sErgebnis');
+      if(el) el.innerHTML='<div class="info rot">'+e.message+'</div>'; })
+    .kinderDaten(TOKEN);
+}
+
+function filterZeichnen(){
+  var el=document.getElementById('sFilter');
+  if(!el || !KDATEN) return;
+  var h='<div class="sfilter"><span class="'+(sSchule?'':'an')+'" '+
+        'onclick="setzeSchule(\'\')">Alle Schulen</span>';
+  for(var i=0;i<KDATEN.schulen.length;i++){
+    var sc=KDATEN.schulen[i];
+    h+='<span class="'+(sSchule===sc?'an':'')+'" onclick="setzeSchule(\''+q(sc)+'\')">'+sc+'</span>';
+  }
+  el.innerHTML=h+'</div>';
+}
+
+function setzeSchule(sc){ sSchule=sc; filterZeichnen(); sucheFiltern(); }
+
+function passt(x,n){
+  if(sSchule && x.schule!==sSchule) return false;
+  if(n && x.name.toLowerCase().indexOf(n)<0) return false;
+  return true;
+}
+
+function sucheFiltern(){
+  if(!KDATEN) return;
+  var el=document.getElementById('sErgebnis');
+  if(!el) return;
+  var f=document.getElementById('sName');
+  var n=f?f.value.trim().toLowerCase():'';
+
+  if(!n && !sSchule){
+    el.innerHTML='<div class="info">Namen eingeben oder eine Schule wählen.</div>';
+    return;
+  }
+  if(sModus==='wo') woZeichnen(el,n); else kontaktZeichnen(el,n);
+}
+
+function mn(z){
+  var t=String(z||'').split(':');
+  return parseInt(t[0],10)*60+parseInt(t[1],10);
+}
+
+function woText(x,jetzt){
+  var zielZeile=function(z){
+    if(!z) return 'Keine Gruppe im Plan';
+    return z.titel+(z.wer?' bei '+z.wer:'')+', bis '+z.bis;
+  };
+  var raum=function(z){ return z && z.raum ? z.raum : 'Raum noch offen'; };
+
+  if(!x.heute) return {cls:'offen', gross:'Heute nicht angemeldet', klein:''};
+  if(x.status==='E') return {cls:'e', gross:'Entschuldigt', klein:'Heute nicht hier'};
+  if(x.status==='F') return {cls:'f', gross:'Fehlt',
+    klein:'War bei der Abholung um '+x.abholung.von+' nicht da'};
+  if(x.status==='✓'){
+    if(x.ziel && mn(jetzt)>mn(x.ziel.bis))
+      return {cls:'offen', gross:'Gruppe beendet',
+              klein:'Ende um '+x.ziel.bis+', vorher '+raum(x.ziel)};
+    return {cls:'ok', gross:raum(x.ziel), klein:zielZeile(x.ziel)};
+  }
+
+  var wer=x.abholung.wer?' von '+x.abholung.wer:'';
+  var jz=mn(jetzt), von=mn(x.abholung.von), bis=mn(x.abholung.bis||x.abholung.von);
+
+  if(jz<von)
+    return {cls:'offen', gross:'Noch in der Schule',
+      klein:'Wird um '+x.abholung.von+' an der '+x.schule+' abgeholt'+wer+
+            '. Danach: '+raum(x.ziel)+', '+zielZeile(x.ziel)};
+
+  if(jz<=bis)
+    return {cls:'jetzt', gross:'Wird gerade abgeholt',
+      klein:'Abholung '+x.schule+' um '+x.abholung.von+wer+
+            '. Danach: '+raum(x.ziel)+', '+zielZeile(x.ziel)};
+
+  return {cls:'offen', gross:'Abholung noch nicht eingetragen',
+    klein:'Abholung um '+x.abholung.von+wer+'. Geplant: '+raum(x.ziel)+', '+zielZeile(x.ziel)};
+}
+
+function woZeichnen(el,n){
+  var rang=function(t){
+    if(!t.heute) return 5;
+    return t.status==='✓'?0:(t.status===''?1:(t.status==='F'?2:3));
+  };
+  var tr=[];
+  for(var i=0;i<KDATEN.wo.length;i++) if(passt(KDATEN.wo[i],n)) tr.push(KDATEN.wo[i]);
+  tr.sort(function(a,b){ return rang(a)-rang(b) || a.name.localeCompare(b.name); });
+
+  if(!tr.length){ el.innerHTML='<div class="info">Kein Kind gefunden.</div>'; return; }
+
+  var h='';
+  if(!KDATEN.freigegeben)
+    h+='<div class="warnbox">Der Plan für heute ist noch nicht freigegeben, '+
+       'Räume und Gruppen sind deshalb noch nicht bekannt.</div>';
+  h+='<div class="sstand">'+tr.length+' Treffer, Stand '+KDATEN.jetzt+' Uhr'+
+     '<button class="btn hell" onclick="kDatenLaden(true)">Aktualisieren</button></div>';
+
+  var zeige=tr.slice(0,40);
+  for(var k=0;k<zeige.length;k++){
+    var x=zeige[k], w=woText(x,KDATEN.jetzt);
+    h+='<div class="kkarte"><div class="kname">'+x.name+'</div>'+
+       '<div class="krow"><span class="chip">'+x.schule+'</span>'+
+       '<span class="chip">Klasse '+x.klasse+'</span></div>'+
+       '<div class="wo '+w.cls+'"><div class="gross">'+w.gross+'</div>'+
+       (w.klein?'<div class="klein">'+w.klein+'</div>':'')+'</div>'+
+       '<div class="kakt">'+
+       '<button class="btn hell" onclick="meldungNeu(\''+q(x.name)+'\',\''+
+         q(x.schule)+'\',\''+q(x.klasse)+'\')">Meldung</button>'+
+       (darfKinder()?'<button class="btn hell" onclick="kindBearbeiten(\''+
+          q(x.name)+'\',\''+q(x.schule)+'\',\''+q(x.klasse)+'\')">Bearbeiten</button>':'')+
+       '</div></div>';
+  }
+  if(tr.length>zeige.length)
+    h+='<div class="info">Es gibt '+(tr.length-zeige.length)+' weitere Treffer. '+
+       'Bitte genauer suchen.</div>';
+  el.innerHTML=h;
+}
+
+function kontaktZeichnen(el,n){
+  var tr=[];
+  for(var i=0;i<KDATEN.kontakt.length;i++) if(passt(KDATEN.kontakt[i],n)) tr.push(KDATEN.kontakt[i]);
+  tr.sort(function(a,b){ return a.name.localeCompare(b.name); });
+
+  if(!tr.length){ el.innerHTML='<div class="info">Kein Kind gefunden.</div>'; return; }
+
+  var h='<div class="sstand">'+tr.length+' Treffer</div>';
+  var zeige=tr.slice(0,40);
+  for(var k=0;k<zeige.length;k++){
+    var x=zeige[k];
+    var allein = x.allein==='ja'   ? '<span class="chip ok">darf allein gehen</span>'
+               : x.allein==='nein' ? '<span class="chip nein">wird abgeholt</span>'
+               : '<span class="chip">Heimweg unbekannt</span>';
+    h+='<div class="kkarte"><div class="kname">'+x.name+'</div>'+
+       '<div class="krow"><span class="chip">'+x.schule+'</span>'+
+       (x.klasse?'<span class="chip">Klasse '+x.klasse+'</span>':'')+allein+'</div>'+
+       (x.telefon
+         ? '<a class="tel" href="tel:'+x.telefon.replace(/[^0-9+]/g,'')+'">'+x.telefon+'</a>'
+         : '<div class="kl">keine Telefonnummer</div>')+
+       '<div class="kakt">'+
+       '<button class="btn hell" onclick="meldungNeu(\''+q(x.name)+'\',\''+
+         q(x.schule)+'\',\''+q(x.klasse)+'\')">Meldung</button>'+
+       (darfKinder()?'<button class="btn hell" onclick="kindBearbeiten(\''+
+          q(x.name)+'\',\''+q(x.schule)+'\',\''+q(x.klasse)+'\')">Bearbeiten</button>':'')+
+       '</div></div>';
+  }
+  if(tr.length>zeige.length)
+    h+='<div class="info">Es gibt '+(tr.length-zeige.length)+' weitere Treffer. '+
+       'Bitte genauer suchen.</div>';
+  el.innerHTML=h;
+}
+
+
+// ---------- Kinder anlegen und bearbeiten ----------
+
+var KSTAMM=null, kAlt=null, kTimer=null, kTreffer=[];
+var KTAGE=[['Mo','Montag'],['Di','Dienstag'],['Mi','Mittwoch'],['Do','Donnerstag']];
+
+function darfKinder(){ return CHEF || (daten && daten.darfKinder); }
+function darfAbmelden(){ return CHEF; }
+
+function kindNeu(){ kAlt=null; kStammDann(function(){ kindFormular(null); }); }
+
+function kStammDann(fn){
+  if(KSTAMM){ fn(); return; }
+  google.script.run
+    .withSuccessHandler(function(d){ KSTAMM=d; fn(); })
+    .withFailureHandler(function(e){ toast(e.message,true); })
+    .kinderStamm(TOKEN);
+}
+
+function kindBearbeiten(name,schule,klasse){
+  google.script.run
+    .withSuccessHandler(function(l){
+      kTreffer=l;
+      var i=-1;
+      for(var x=0;x<l.length;x++){
+        if(l[x].vorname+' '+l[x].nachname!==name) continue;
+        if(i<0) i=x;
+        if(l[x].schule===schule && l[x].klasse===klasse){ i=x; break; }
+      }
+      if(i<0){ toast('Kind steht nicht im Tab Schueler',true); return; }
+      kStammDann(function(){ kindFormular(i); });
+    })
+    .withFailureHandler(function(e){ toast(e.message,true); })
+    .kinderSuche(TOKEN, name);
+}
+
+function kindFormular(i){
+  kAlt=(i===null||i===undefined)?null:kTreffer[i];
+  var k=kAlt||{schule:KSTAMM.schulen[0]||'', vorname:'', nachname:'', klasse:'',
+               status:'EZ', Mo:'', Di:'', Mi:'', Do:'', telefon:'', allein:''};
+  var sub=document.getElementById('sub');
+  if(sub) sub.textContent=kAlt?'Kind bearbeiten':'Neues Kind anmelden';
+
+  var h='<div class="kform">'+
+    '<div class="zeile">'+
+    '<div class="fg"><label>Schule</label><select id="kfSchule" onchange="kZeitenNeu()">';
+  for(var s=0;s<KSTAMM.schulen.length;s++)
+    h+='<option'+(KSTAMM.schulen[s]===k.schule?' selected':'')+'>'+KSTAMM.schulen[s]+'</option>';
+  h+='</select></div>'+
+    '<div class="fg"><label>Klasse</label><input type="text" id="kfKlasse" value="'+k.klasse+
+    '" placeholder="z.B. 2a"></div>'+
+    '<div class="fg"><label>Status</label><select id="kfStatus">'+
+    '<option'+(k.status==='EZ'?' selected':'')+'>EZ</option>'+
+    '<option'+(k.status==='BUT'?' selected':'')+'>BUT</option></select></div></div>'+
+    '<div class="zeile">'+
+    '<div class="fg"><label>Vorname</label><input type="text" id="kfVor" value="'+k.vorname+'"></div>'+
+    '<div class="fg"><label>Nachname</label><input type="text" id="kfNach" value="'+k.nachname+'"></div>'+
+    '</div>'+
+    '<label style="display:block;font-size:12px;color:var(--mut);font-weight:700;margin-bottom:5px">'+
+    'Abholzeit</label><div class="tage" id="kfTage"></div>'+
+    '<div class="zeile">'+
+    '<div class="fg"><label>Telefonnummer der Eltern</label><input type="text" id="kfTel" value="'+
+    k.telefon+'" placeholder="mehrere mit Komma trennen"></div>'+
+    '<div class="fg"><label>Darf allein nach Hause</label><select id="kfAllein">'+
+    '<option value=""'+(!k.allein?' selected':'')+'>unbekannt</option>'+
+    '<option value="ja"'+(k.allein==='ja'?' selected':'')+'>ja</option>'+
+    '<option value="nein"'+(k.allein==='nein'?' selected':'')+'>nein</option></select></div></div>'+
+    '<div class="kakt">'+
+    '<button class="btn hell" onclick="zeigeSuche()">Zurück</button>'+
+    '<button class="btn primer" onclick="kindSpeichernKlick(this)">Speichern</button></div>';
+
+  if(kAlt && darfAbmelden()){
+    h+='<div class="abm"><div class="fg"><label>Abmelden, Grund (freiwillig)</label>'+
+       '<input type="text" id="kfGrund" placeholder="z.B. Umzug, Schulwechsel"></div>'+
+       '<div class="kakt"><button class="btn rot" onclick="kindAbmeldenKlick(this)">'+
+       'Kind abmelden</button></div></div>';
+  }
+  h+='</div>';
+  document.getElementById('inhalt').innerHTML=h;
+  kZeitenNeu(k);
+}
+
+function kZeitenNeu(k){
+  var schule=document.getElementById('kfSchule').value;
+  var zeiten=(KSTAMM.zeiten[schule]||[]).slice();
+  var alt={};
+  for(var t=0;t<KTAGE.length;t++){
+    var d=KTAGE[t][0];
+    alt[d]=k?(k[d]||''):kZeitLesen(d);
+  }
+  var h='';
+  for(var t2=0;t2<KTAGE.length;t2++){
+    var tag=KTAGE[t2][0], wert=alt[tag];
+    var andere=!!wert && zeiten.indexOf(wert)<0;
+    h+='<div class="fg"><label>'+KTAGE[t2][1]+'</label>'+
+       '<select id="kz_'+tag+'" onchange="kAndere(\''+tag+'\')">'+
+       '<option value=""'+(!wert?' selected':'')+'>kommt nicht</option>';
+    for(var z=0;z<zeiten.length;z++)
+      h+='<option'+(zeiten[z]===wert?' selected':'')+'>'+zeiten[z]+'</option>';
+    h+='<option value="andere"'+(andere?' selected':'')+'>andere Zeit</option></select>'+
+       '<input type="time" id="kt_'+tag+'" value="'+(andere?wert:'')+'"'+
+       (andere?'':' style="display:none"')+'></div>';
+  }
+  document.getElementById('kfTage').innerHTML=h;
+}
+function kAndere(tag){
+  var s=document.getElementById('kz_'+tag), i=document.getElementById('kt_'+tag);
+  i.style.display=(s.value==='andere')?'':'none';
+  if(s.value==='andere') i.focus();
+}
+function kZeitLesen(tag){
+  var s=document.getElementById('kz_'+tag);
+  if(!s) return '';
+  if(s.value==='andere'){ var i=document.getElementById('kt_'+tag); return i?i.value:''; }
+  return s.value;
+}
+
+function kindSpeichernKlick(btn){
+  var v=function(id){ return document.getElementById(id).value.replace(/^\s+|\s+$/g,''); };
+  var neu={schule:v('kfSchule'), klasse:v('kfKlasse'), status:v('kfStatus'),
+           vorname:v('kfVor'), nachname:v('kfNach'),
+           telefon:v('kfTel'), allein:v('kfAllein')};
+  var tage=0;
+  for(var t=0;t<KTAGE.length;t++){
+    neu[KTAGE[t][0]]=kZeitLesen(KTAGE[t][0]);
+    if(neu[KTAGE[t][0]]) tage++;
+  }
+  if(!neu.vorname||!neu.nachname||!neu.klasse){
+    toast('Bitte Vorname, Nachname und Klasse ausfüllen',true); return; }
+  if(!tage && !confirm('Für keinen Tag ist eine Abholzeit eingetragen. Trotzdem speichern?')) return;
+
+  var fertig=laeuft(btn,'Speichert...');
+  google.script.run
+    .withSuccessHandler(function(){
+      fertig(); KSTAMM=null; daten=null;
+      toast(neu.vorname+' '+neu.nachname+(kAlt?' gespeichert':' angemeldet'));
+      zeigeSuche(); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .kindSpeichern(TOKEN, kAlt, neu);
+}
+
+function kindAbmeldenKlick(btn){
+  var name=kAlt.vorname+' '+kAlt.nachname;
+  if(!confirm(name+' wirklich abmelden?\n\nDas Kind wird aus Schueler und '+
+              'Teilnehmer Liste entfernt und im Tab Abgemeldet gespeichert.')) return;
+  var fertig=laeuft(btn,'Meldet ab...');
+  google.script.run
+    .withSuccessHandler(function(){
+      fertig(); KSTAMM=null; daten=null;
+      toast(name+' abgemeldet'); zeigeSuche(); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .kindAbmelden(TOKEN, kAlt, document.getElementById('kfGrund').value);
+}
+
+
+// ---------- Team pflegen ----------
+
+var MA=null;
+
+function maLaden(fn){
+  google.script.run
+    .withSuccessHandler(function(l){ MA=l; if(fn) fn(); })
+    .withFailureHandler(function(e){ toast(e.message,true); })
+    .teamListe(TOKEN);
+}
+
+function maListeHtml(){
+  if(!MA) return '<div class="info">Lade...</div>';
+  var aktiv=0;
+  for(var a=0;a<MA.length;a++) if(MA[a].aktiv) aktiv++;
+
+  var h='<div class="akopf" style="margin-top:22px">'+
+        '<span class="atitel">Team</span>'+
+        '<span class="azahl">'+aktiv+' von '+MA.length+' aktiv</span>'+
+        '<span class="alinie"></span>'+
+        '<button class="btn hell" onclick="maFormular(null)">+ Neuer Mitarbeiter</button></div>';
+
+  for(var i=0;i<MA.length;i++){
+    var p=MA[i];
+    h+='<div class="trow'+(p.aktiv?'':' aus')+'">'+
+       '<div style="cursor:pointer" onclick="maFormular('+i+')"><b>'+p.name+' '+
+       (p.nachname||'')+'</b><div class="kl">'+
+       (p.rolle==='praktikant'?'Praktikant':'Betreuer')+
+       (p.aktiv?'':', inaktiv')+(p.kinder?', Kinder':'')+(p.team?', Team':'')+
+       (p.meldung?', Meldungen':'')+(p.kinderschutz?', Kinderschutz':'')+
+       (p.nachricht?', Nachrichten':'')+
+       ' · Token '+p.token+'</div></div>'+
+       '<div class="zweisch">'+
+       '<div class="sch1"><span>aktiv</span><div class="schalter'+(p.aktiv?' an':'')+
+       '" onclick="maSchalter('+i+',\'aktiv\',this)"><i></i></div></div>'+
+       '<div class="sch1"><span>Kinder</span><div class="schalter'+(p.kinder?' an':'')+
+       '" onclick="maSchalter('+i+',\'kinder\',this)"><i></i></div></div>'+
+       (CHEF?'<div class="sch1"><span>Team</span><div class="schalter'+(p.team?' an':'')+
+        '" onclick="maSchalter('+i+',\'team\',this)"><i></i></div></div>':'')+
+       '</div></div>';
+  }
+  return h;
+}
+
+function maSchalter(i,feld,el){
+  var p=MA[i], neu=!p[feld];
+  el.className='schalter'+(neu?' an':'')+' warte';
+  var fertig=function(){ daten=null; maLaden(maNeuZeichnen); };
+  var lauf=google.script.run
+    .withSuccessHandler(function(){
+      toast(p.name+': '+(feld==='aktiv'?(neu?'aktiv':'inaktiv')
+            :(feld==='kinder'?(neu?'darf Kinder pflegen':'darf keine Kinder pflegen')
+            :(neu?'darf das Team pflegen':'darf das Team nicht mehr pflegen'))));
+      fertig(); })
+    .withFailureHandler(function(e){ toast(e.message,true); fertig(); });
+
+  if(feld==='aktiv') lauf.setzeAktiv(TOKEN,p.name,neu);
+  else if(feld==='kinder') lauf.setzeKinderRecht(TOKEN,p.name,neu);
+  else lauf.setzeTeamRecht(TOKEN,p.name,neu);
+}
+
+function maFormular(i){
+  var neu=(i===null||i===undefined);
+  var p=neu?{name:'',nachname:'',email:'',rolle:'betreuer',token:'',
+             aktiv:true,kinder:false,meldung:false,kinderschutz:false,
+             nachricht:false,von:'',bis:''}:MA[i];
+  MA_ALT=neu?null:p.name;
+
+  var h='<div class="kform">'+
+    '<div class="zeile">'+
+    '<div class="fg"><label>Vorname'+(neu?'':' (kann nicht geändert werden)')+'</label>'+
+    '<input type="text" id="maName" value="'+p.name+'"'+(neu?'':' disabled')+'></div>'+
+    '<div class="fg"><label>Nachname</label>'+
+    '<input type="text" id="maNach" value="'+(p.nachname||'')+'"></div></div>'+
+    '<div class="zeile">'+
+    '<div class="fg"><label>Rolle</label><select id="maRolle" onchange="maRolleWechsel()">'+
+    '<option value="betreuer"'+(p.rolle==='betreuer'?' selected':'')+'>Betreuer</option>'+
+    '<option value="praktikant"'+(p.rolle==='praktikant'?' selected':'')+'>Praktikant</option>'+
+    '</select></div>'+
+    '<div class="fg"><label>Token für den Link</label>'+
+    '<input type="text" id="maToken" value="'+p.token+'" placeholder="mindestens 6 Zeichen"></div>'+
+    '</div>'+
+    '<div class="zeile" id="maZeitraum"'+(p.rolle==='praktikant'?'':' style="display:none"')+'>'+
+    '<div class="fg"><label>Praktikum von</label>'+
+    '<input type="date" id="maVon" value="'+(p.von||'')+'"></div>'+
+    '<div class="fg"><label>bis</label>'+
+    '<input type="date" id="maBis" value="'+(p.bis||'')+'"></div></div>'+
+    '<div class="zeile">'+
+    '<div class="fg"><label>E-Mail (freiwillig)</label>'+
+    '<input type="text" id="maMail" value="'+(p.email||'')+'"></div>'+
+    '<div class="fg"><label>Aktiv</label><select id="maAktiv">'+
+    '<option value="ja"'+(p.aktiv?' selected':'')+'>ja</option>'+
+    '<option value="nein"'+(p.aktiv?'':' selected')+'>nein</option></select></div>'+
+    '<div class="fg"><label>Darf Kinder pflegen</label><select id="maKinder">'+
+    '<option value="nein"'+(p.kinder?'':' selected')+'>nein</option>'+
+    '<option value="ja"'+(p.kinder?' selected':'')+'>ja</option></select></div></div>'+
+    '<div class="zeile">'+
+    '<div class="fg"><label>Sieht alle Elternmeldungen</label><select id="maMeld">'+
+    '<option value="nein"'+(p.meldung?'':' selected')+'>nein</option>'+
+    '<option value="ja"'+(p.meldung?' selected':'')+'>ja</option></select></div>'+
+    '<div class="fg"><label>Kinderschutz prüfen</label><select id="maKS">'+
+    '<option value="nein"'+(p.kinderschutz?'':' selected')+'>nein</option>'+
+    '<option value="ja"'+(p.kinderschutz?' selected':'')+'>ja</option></select></div>'+
+    '<div class="fg"><label>Interne Nachrichten</label><select id="maNachr">'+
+    '<option value="nein"'+(p.nachricht?'':' selected')+'>nein</option>'+
+    '<option value="ja"'+(p.nachricht?' selected':'')+'>ja</option></select></div></div>'+
+    '<div class="kakt">'+
+    '<button class="btn hell" onclick="maZurueck()">Zurück</button>'+
+    '<button class="btn primer" onclick="maSpeichernKlick(this)">Speichern</button>'+
+    '</div></div>';
+  document.getElementById('inhalt').innerHTML=h;
+}
+
+var MA_ALT=null;
+
+function maRolleWechsel(){
+  document.getElementById('maZeitraum').style.display=
+    (document.getElementById('maRolle').value==='praktikant')?'flex':'none';
+}
+
+function maSpeichernKlick(btn){
+  var v=function(id){ return document.getElementById(id).value.replace(/^\s+|\s+$/g,''); };
+  var e={ name:v('maName'), nachname:v('maNach'), email:v('maMail'),
+          rolle:v('maRolle'), token:v('maToken'),
+          aktiv:v('maAktiv')==='ja', kinder:v('maKinder')==='ja',
+          meldung:v('maMeld')==='ja', kinderschutz:v('maKS')==='ja',
+          nachricht:v('maNachr')==='ja',
+          von:v('maVon'), bis:v('maBis') };
+  if(!e.name){ toast('Bitte einen Vornamen eintragen',true); return; }
+  if(e.token.length<6){ toast('Der Token braucht mindestens 6 Zeichen',true); return; }
+
+  var fertig=laeuft(btn,'Speichert...');
+  google.script.run
+    .withSuccessHandler(function(){
+      fertig(); daten=null;
+      toast(e.name+(MA_ALT?' gespeichert':' angelegt, Link mit ?t='+e.token));
+      maZurueck(); })
+    .withFailureHandler(function(er){ fertig(); toast(er.message,true); })
+    .mitarbeiterSpeichern(TOKEN, MA_ALT, e);
+}
+
+function zeigeTeam(){
+  document.getElementById('sub').textContent='Mitarbeiter anlegen und Rechte setzen';
+  document.getElementById('inhalt').innerHTML=
+    '<div id="maBereich"><div class="info">Lade...</div></div>';
+  maLaden(maNeuZeichnen);
+}
+function maNeuZeichnen(){
+  var el=document.getElementById('maBereich');
+  if(el) el.innerHTML=maListeHtml();
+}
+function maZurueck(){ zeigeTeam(); }
+
+
+// ---------- Meldungen ----------
+
+var ELTERN_AUF=false, INTERN_AUF=false, MELD_TAB='eltern';
+
+function meldPaket(){ return (daten && daten.meldungen) || {}; }
+function meldListe(){ return meldPaket().eltern || []; }
+function meldInternListe(){ return meldPaket().intern || []; }
+function darfMeldung(){ return CHEF || (daten && daten.darfMeldung); }
+function darfNachricht(){ return CHEF || (daten && daten.darfNachricht); }
+function darfKinderschutz(){ return CHEF || (daten && daten.darfKinderschutz); }
+function meinName(){ return (daten && daten.name) || ICH || ''; }
+
+// "25.09.2026 09:12:03" -> "25.09.2026"
+function nurDatum(s){ return String(s||'').split(' ')[0]; }
+
+function meldFuer(name,schule,klasse){
+  var m=(daten && daten.meldungKarte) || {};
+  return m[name+'|'+schule+'|'+klasse] || [];
+}
+function meldChip(name,schule,klasse){
+  var l=meldFuer(name,schule,klasse), h='';
+  for(var i=0;i<l.length;i++){
+    if(l[i].art==='Frueher')
+      h+='<span class="meldart f">geht '+(l[i].uhrzeit||'früher')+'</span>';
+    else if(l[i].art==='Mitteilung')
+      h+='<span class="meldart m">Mitteilung</span>';
+    else h+='<span class="meldart">von Eltern entschuldigt</span>';
+  }
+  return h;
+}
+// freier Text der Eltern, als eigene Zeile unter dem Namen
+function meldText(name,schule,klasse){
+  var l=meldFuer(name,schule,klasse), h='';
+  for(var i=0;i<l.length;i++)
+    if(l[i].nachricht) h+='<div class="meldtext">'+l[i].nachricht+'</div>';
+  return h;
+}
+
+function zaehlerSetzen(id,n){
+  var el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=n;
+  el.className='punkt'+(n?' an':'');
+}
+
+// Ist diese interne Nachricht fuer mich neu?
+// Der Vermerk GesehenVon wird gesetzt, sobald ich die Sprechblase oeffne.
+// Wer antworten darf, behaelt offene Nachrichten so lange im Zaehler,
+// bis sie beantwortet sind. Das ist die Aufgabenliste der Verwaltung.
+function internNeu(m){
+  var ich=meinName();
+  if(!ich) return false;
+  var g=String(m.gesehenVon||'').split(',');
+  for(var i=0;i<g.length;i++) if(g[i].trim()===ich) return false;
+  if(m.von===ich) return !!m.antwort;          // eigene, erst mit Antwort neu
+  if(m.an===ich || m.an==='Alle') return true;
+  return !!darfNachricht() && !m.antwort;
+}
+
+// betrifft mich unmittelbar, wird also beim Oeffnen als gesehen vermerkt
+function internMeins(m){
+  var ich=meinName();
+  if(!ich) return false;
+  return m.an===ich || m.an==='Alle' || (m.von===ich && !!m.antwort);
+}
+
+function glockeAktualisieren(){
+  var e=meldListe(), it=meldInternListe(), i, ne=0, ni=0;
+
+  if(darfMeldung()){ for(i=0;i<e.length;i++) if(!e[i].gesehen) ne++; }
+  else if(!ELTERN_AUF) ne=e.length;
+
+  for(i=0;i<it.length;i++) if(internNeu(it[i])) ni++;
+
+  zaehlerSetzen('punkt', ne);
+  zaehlerSetzen('punktI', ni);
+  ksAktualisieren();
+}
+
+function meldungenZeigen(){ MELD_TAB='eltern'; ELTERN_AUF=true; meldBox(); }
+function internZeigen(){
+  MELD_TAB='intern'; INTERN_AUF=true; meldBox();
+  internVermerken();
+}
+
+// laeuft im Hintergrund, die Liste ist schon zu sehen
+function internVermerken(){
+  var it=meldInternListe(), i, etwas=false;
+  for(i=0;i<it.length;i++) if(internNeu(it[i]) && internMeins(it[i])) etwas=true;
+  if(!etwas) return;
+  google.script.run
+    .withSuccessHandler(function(){
+      var ich=meinName(), k;
+      for(k=0;k<it.length;k++) if(internMeins(it[k])){
+        var g=String(it[k].gesehenVon||'');
+        if((', '+g+', ').indexOf(', '+ich+', ')<0)
+          it[k].gesehenVon = g ? g+', '+ich : ich;
+      }
+      glockeAktualisieren(); })
+    .withFailureHandler(function(){})
+    .internGesehen(TOKEN);
+}
+
+function meldBox(){
+  var h, e=meldListe(), it=meldInternListe();
+  if(MELD_TAB==='eltern'){
+    ELTERN_AUF=true;
+    h='<h3>Meldungen der Eltern</h3><div class="wann">'+
+      (e.length?e.length+' für diesen Tag':'keine für diesen Tag')+'</div>'+
+      meldElternHtml(e);
+  }else{
+    INTERN_AUF=true;
+    h='<h3>Nachrichten im Team</h3><div class="wann">'+
+      (it.length?it.length+' aus den letzten Wochen':'noch nichts vorhanden')+'</div>'+
+      meldInternHtml(it);
+  }
+
+  h+='<div class="akt"><button class="btn hell" onclick="zu()">Schließen</button></div>';
+  document.getElementById('box').innerHTML=h;
+  document.getElementById('modal').className='modal auf';
+  glockeAktualisieren();
+}
+
+function meldElternHtml(l){
+  if(!l.length) return '';
+  var h='';
+  for(var i=0;i<l.length;i++){
+    var m=l[i];
+    var art=m.art==='Frueher'
+      ? '<span class="meldart f">geht '+(m.uhrzeit||'früher')+'</span>'
+      : (m.art==='Mitteilung'?'<span class="meldart m">Mitteilung</span>'
+                             :'<span class="meldart">entschuldigt</span>');
+    h+='<div class="meld'+(m.gesehen?'':' neu')+'"><b>'+m.kind+'</b>'+art+
+       '<div class="kl">'+m.schule+', Klasse '+m.klasse+' · '+m.eingang+'</div>'+
+       (m.nachricht?'<div style="margin-top:5px">'+m.nachricht+'</div>':'')+
+       (m.art==='Frueher'
+         ? '<div class="kl" style="margin-top:5px">Bitte im Zweifel telefonisch bestätigen.</div>'
+         : '')+
+       (darfMeldung() && !m.gesehen
+         ? '<div style="margin-top:8px"><button class="btn hell" onclick="meldErledigt(\''+
+           q(m.eingang)+'\',\''+q(m.kind)+'\',this)">Erledigt</button></div>'
+         : '')+
+       '</div>';
+  }
+  return h;
+}
+
+function meldInternHtml(l){
+  var h='<div class="kakt" style="margin:0 0 12px">'+
+        (darfNachricht()
+          ? '<button class="btn primer" onclick="nachrichtNeu()">Nachricht an Mitarbeiter</button>'
+          : '<button class="btn primer" onclick="mitteilungNeu()">Etwas mitteilen</button>')+
+        '</div>';
+  if(!l.length)
+    return h+'<div class="info">Nichts vorhanden. Eine Meldung zu einem Kind '+
+           'schreibst du im Reiter Kinder auf der Karte des Kindes.</div>';
+  for(var i=0;i<l.length;i++){
+    var m=l[i];
+    var zusatz = m.kind
+      ? 'zu '+m.kind+', '+m.schule+' '+m.klasse
+      : (m.an==='Alle' ? 'an alle'
+                       : (m.an ? 'an '+m.an : 'an die Verwaltung'));
+    h+='<div class="meld'+(internNeu(m)?' neu':'')+'">'+
+       '<b>'+(m.von||'?')+'</b>'+
+       '<div class="kl">'+zusatz+' · '+nurDatum(m.eingang)+'</div>'+
+       (m.nachricht?'<div style="margin-top:5px">'+m.nachricht+'</div>':'')+
+       (m.antwort
+         ? '<div class="meldtext" style="margin-top:8px"><b>Antwort von '+
+           (m.antwortVon||'?')+':</b> '+
+           m.antwort+'</div>'
+         : ((darfNachricht() || m.an===meinName())
+            ? '<div style="margin-top:8px">'+
+              '<input type="text" id="ant'+i+'" placeholder="Antwort schreiben" '+
+              'style="width:100%;padding:9px;margin-bottom:6px" autocomplete="off">'+
+              '<button class="btn primer" onclick="meldAntworten(\''+q(m.eingang)+
+              '\','+i+',this)">Antworten</button></div>'
+            : '<div class="kl" style="margin-top:6px">Noch keine Antwort.</div>'))+
+       '</div>';
+  }
+  return h;
+}
+
+function meldAntworten(eingang,i,btn){
+  var f=document.getElementById('ant'+i);
+  var t=f?f.value.trim():'';
+  if(t.length<2){ toast('Bitte eine Antwort schreiben',true); return; }
+  var fertig=laeuft(btn,'Sendet...');
+  google.script.run
+    .withSuccessHandler(function(){
+      fertig();
+      var l=meldInternListe();
+      for(var k=0;k<l.length;k++) if(l[k].eingang===eingang){
+        l[k].antwort=t; l[k].antwortVon=meinName();
+      }
+      meldBox(); toast('Antwort gespeichert'); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .meldungAntwort(TOKEN, eingang, t);
+}
+
+function meldErledigt(eingang,kind,btn){
+  var fertig=laeuft(btn,'Speichert...');
+  google.script.run
+    .withSuccessHandler(function(){
+      fertig();
+      var l=meldListe();
+      for(var i=0;i<l.length;i++)
+        if(l[i].eingang===eingang && l[i].kind===kind) l[i].gesehen=true;
+      meldBox();
+      toast('Meldung abgehakt'); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .meldungGesehen(TOKEN, eingang, kind);
+}
+
+// Nachricht an einen bestimmten Mitarbeiter, nur mit Recht
+var EMPF=null;
+function nachrichtNeu(){
+  document.getElementById('box').innerHTML=
+    '<h3>Nachricht an Mitarbeiter</h3><div class="info">Lade...</div>';
+  document.getElementById('modal').className='modal auf';
+  if(EMPF){ nachrichtBox(); return; }
+  google.script.run
+    .withSuccessHandler(function(l){ EMPF=l; nachrichtBox(); })
+    .withFailureHandler(function(e){ zu(); toast(e.message,true); })
+    .nachrichtEmpfaenger(TOKEN);
+}
+
+function nachrichtBox(){
+  var o='';
+  for(var i=0;i<EMPF.length;i++){
+    var n=EMPF[i];
+    o+='<option value="'+n+'">'+(n==='Alle'?'Alle Mitarbeiter':n)+'</option>';
+  }
+  document.getElementById('box').innerHTML=
+    '<h3>Nachricht an Mitarbeiter</h3>'+
+    '<div class="feld"><label>An</label>'+
+    '<select id="naAn" style="width:100%;padding:10px;font-size:15px">'+o+'</select></div>'+
+    '<div class="feld"><label>Nachricht</label>'+
+    '<textarea id="naText" rows="5" style="width:100%;padding:10px;font-size:15px;'+
+    'font-family:inherit"></textarea></div>'+
+    '<div class="akt"><button class="btn hell" onclick="zu()">Abbrechen</button>'+
+    '<button class="btn primer" onclick="nachrichtSendenKlick(this)">Senden</button></div>';
+}
+
+function nachrichtSendenKlick(btn){
+  var an=document.getElementById('naAn').value;
+  var t=document.getElementById('naText').value.trim();
+  if(t.length<3){ toast('Bitte kurz schreiben, worum es geht',true); return; }
+  var fertig=laeuft(btn,'Sendet...');
+  google.script.run
+    .withSuccessHandler(function(){ fertig(); zu();
+      toast(an==='Alle'?'An alle Mitarbeiter gesendet':'An '+an+' gesendet'); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .nachrichtSenden(TOKEN, an, t);
+}
+
+// Mitteilung eines Mitarbeiters an die Leitung
+function mitteilungNeu(){
+  document.getElementById('box').innerHTML=
+    '<h3>Etwas mitteilen</h3>'+
+    '<div class="wann">Geht an die Verwaltung. Das lesen die Leitung '+
+    'und wer das Recht dazu hat.</div>'+
+    '<div class="feld"><label>Nachricht</label>'+
+    '<textarea id="miTxt" rows="5" style="width:100%;padding:10px;font-size:15px;'+
+    'font-family:inherit"></textarea></div>'+
+    '<div class="akt"><button class="btn hell" onclick="zu()">Abbrechen</button>'+
+    '<button class="btn primer" onclick="mitteilungSendenKlick(this)">Senden</button></div>';
+  document.getElementById('modal').className='modal auf';
+}
+
+function mitteilungSendenKlick(btn){
+  var t=document.getElementById('miTxt').value.trim();
+  if(t.length<3){ toast('Bitte kurz schreiben, worum es geht',true); return; }
+  var fertig=laeuft(btn,'Sendet...');
+  google.script.run
+    .withSuccessHandler(function(){ fertig(); zu(); toast('Gesendet'); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .mitteilungSenden(TOKEN, t);
+}
+
+// Meldung über ein Kind schreiben, aus dem Reiter Kinder heraus
+function meldungNeu(name,schule,klasse){
+  document.getElementById('box').innerHTML=
+    '<h3>Meldung zu '+name+'</h3>'+
+    '<div class="wann">'+schule+', Klasse '+klasse+'</div>'+
+    '<div class="feld"><label>Was ist vorgefallen?</label>'+
+    '<textarea id="miText" rows="5" style="width:100%;padding:10px;font-size:15px;'+
+    'font-family:inherit" placeholder="kurz und sachlich"></textarea></div>'+
+    '<div class="kl" style="margin:-4px 0 12px">Sehen können das nur die Leitung '+
+    'und wer das Recht dazu hat.</div>'+
+    '<div class="akt"><button class="btn hell" onclick="zu()">Abbrechen</button>'+
+    '<button class="btn primer" onclick="meldungNeuSenden(\''+q(name)+'\',\''+
+    q(schule)+'\',\''+q(klasse)+'\',this)">Senden</button></div>';
+  document.getElementById('modal').className='modal auf';
+}
+
+function meldungNeuSenden(name,schule,klasse,btn){
+  var t=document.getElementById('miText').value.trim();
+  if(t.length<3){ toast('Bitte kurz schreiben, worum es geht',true); return; }
+  var fertig=laeuft(btn,'Sendet...');
+  google.script.run
+    .withSuccessHandler(function(){
+      fertig(); zu(); toast('Meldung gesendet'); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .meldungIntern(TOKEN, {kind:name, schule:schule, klasse:klasse, nachricht:t});
+}
+
+
+// ---------- Kinderschutz ----------
+
+var KS=null;
+
+function ksAktualisieren(){
+  var el=document.getElementById('ksPunkt');
+  if(!el) return;
+  var k=(daten && daten.ks) || null;
+  if(!k){ el.style.display='none'; return; }
+
+  if(k.darf){
+    el.style.display='inline-flex';
+    el.className = 'kspunkt'+(k.offen?'':' grau');
+    el.textContent = k.offen ? ('! '+k.offen) : '\u2713';
+    el.title = k.offen ? (k.offen+' Unterschriften fehlen noch')
+                       : 'Kinderschutz im Team vollständig';
+    return;
+  }
+  el.style.display='inline-flex';
+  el.className = 'kspunkt'+(k.farbe==='grau'?' grau':'');
+  el.textContent = k.farbe==='grau' ? '\u2713' : '!';
+  el.title = k.farbe==='grau'
+    ? 'Kinderschutz erledigt'
+    : 'Kinderschutz: bitte lesen, unterschreiben und bestätigen';
+}
+
+function ksZeigen(){
+  document.getElementById('box').innerHTML=
+    '<h3>Kinderschutz</h3><div class="info">Lade...</div>';
+  document.getElementById('modal').className='modal auf';
+  google.script.run
+    .withSuccessHandler(function(d){ KS=d; ksBox(); })
+    .withFailureHandler(function(e){
+      document.getElementById('box').innerHTML=
+        '<h3>Kinderschutz</h3><div class="info rot">'+e.message+'</div>'+
+        '<div class="akt"><button class="btn hell" onclick="zu()">Schließen</button></div>'; })
+    .ksStand(TOKEN);
+}
+
+// eine Unterlage: lesen im Browser und herunterladen zum Ausdrucken
+function ksDatei(titel, lesen, laden){
+  if(!lesen)
+    return '<span class="kl">Der Link zu '+titel+
+           ' ist noch nicht hinterlegt.</span>';
+  return '<a class="btn hell" href="'+lesen+'" target="_blank" rel="noopener">'+
+         titel+' lesen</a>'+
+         (laden
+           ? '<a class="btn hell" href="'+laden+'" target="_blank" rel="noopener">'+
+             titel+' herunterladen</a>'
+           : '');
+}
+
+function ksKurzfassung(){
+  return '<div class="ksbox">'+
+  '<div class="kst">Die wichtigsten Regeln</div>'+
+  '<p><b>Nähe und Distanz.</b> Einzelgespräche und Angebote finden nur in Räumen statt, '+
+  'die von außen einsehbar oder zugänglich sind. Keine privaten Freundschaften, Treffen '+
+  'oder Urlaube mit betreuten Kindern. Kein Kind wird ohne pädagogischen Grund bevorzugt '+
+  'oder benachteiligt. Verwandtschaft oder private Kontakte zu Familien legst du offen.</p>'+
+  '<p><b>Körperkontakt.</b> Berührungen müssen altersgerecht und situationsgerecht sein '+
+  'und brauchen die Zustimmung des Kindes. Ein Nein wird immer respektiert. Die '+
+  'Verantwortung für die Grenze liegt bei dir, nie beim Kind.</p>'+
+  '<p><b>Sprache und Kleidung.</b> Keine abwertenden oder zweideutigen Bemerkungen, '+
+  'keine Spitznamen gegen den Willen des Kindes, angemessene Kleidung.</p>'+
+  '<p><b>Handy, Fotos und soziale Netzwerke.</b> Keine privaten Chats mit Kindern, keine '+
+  'privaten Fotos oder Videos von Kindern, keine Weitergabe von Aufnahmen.</p>'+
+  '<p><b>Intimsphäre.</b> Toiletten und Umkleiden werden nicht ohne Not betreten, '+
+  'Rückzugsräume bleiben einsehbar.</p>'+
+  '<p><b>Geschenke und Geheimnisse.</b> Keine persönlichen Geschenke und keine '+
+  'Vergünstigungen. Keine Geheimnisse mit einem Kind, die vor Eltern oder Leitung '+
+  'verborgen bleiben sollen.</p>'+
+  '<p><b>Bei einem Verdacht.</b> Ruhe bewahren, nichts auf eigene Faust unternehmen. '+
+  'Beobachtungen sachlich notieren, ohne Deutung. Sofort die Leitung informieren, die '+
+  'alles Weitere veranlasst.</p>'+
+  '<p><b>Beschwerden.</b> Jede Beschwerde von Kindern oder Eltern wird ernst genommen '+
+  'und an die Leitung weitergegeben.</p>'+
+  '<p class="kl">Das ist eine Kurzfassung. Verbindlich ist das vollständige '+
+  'Kinderschutzkonzept.</p></div>';
+}
+
+function ksBox(){
+  var h='<h3>Kinderschutz</h3>';
+
+  if(KS.bestaetigt){
+    h+='<div class="hinw ok">Bestätigt am '+KS.bestaetigt+
+       (KS.unterschrift?'. Unterschrift im Büro angekommen am '+KS.unterschrift+'.'
+                       :'. Die Unterschrift im Büro fehlt noch.')+'</div>';
+  }else{
+    h+='<div class="hinw no">Bitte lies die Unterlagen, drucke sie aus, unterschreibe '+
+       'sie und gib sie im Büro ab. Danach hier bestätigen.</div>';
+  }
+
+  h+=ksKurzfassung();
+
+  h+='<div class="feld"><label>Unterlagen</label><div class="ksdl">'+
+     ksDatei('Kinderschutzkonzept', KS.konzept, KS.konzeptDl)+
+     ksDatei('Meldebogen', KS.meldebogen, KS.meldebogenDl)+
+     '</div></div>';
+
+  if(!KS.bestaetigt){
+    h+='<label class="kshaken"><input type="checkbox" id="ksHaken">'+
+       '<span>Ich habe beides gelesen, ausgedruckt, unterschrieben und im Büro '+
+       'abgegeben.</span></label>'+
+       '<div style="margin-top:10px"><button class="btn primer" '+
+       'onclick="ksBestaetigenKlick(this)">Bestätigen</button></div>';
+  }
+
+  if(KS.darf && KS.liste.length) h+=ksListeHtml();
+
+  h+='<div class="akt"><button class="btn hell" onclick="zu()">Schließen</button></div>';
+  document.getElementById('box').innerHTML=h;
+}
+
+function ksListeHtml(){
+  var h='<div class="feld" style="margin-top:18px"><label>Stand im Team</label>'+
+        '<table class="t"><tr><th>Name</th><th>Bestätigt</th><th>Unterschrift</th>'+
+        '<th></th></tr>';
+  for(var i=0;i<KS.liste.length;i++){
+    var p=KS.liste[i];
+    h+='<tr><td data-l="Name"><b>'+p.name+'</b></td>'+
+       '<td data-l="Bestätigt">'+(p.bestaetigt||'offen')+'</td>'+
+       '<td data-l="Unterschrift">'+(p.unterschrift||'offen')+'</td>'+
+       '<td class="rechts">'+
+       (p.unterschrift
+         ? '<button class="btn hell" onclick="ksUnter(\''+q(p.name)+'\',false,this)">'+
+           'Zurücknehmen</button>'
+         : '<button class="btn hell" onclick="ksUnter(\''+q(p.name)+'\',true,this)">'+
+           'Unterschrift da</button>'+
+           '<button class="btn hell" onclick="ksErinnere(\''+q(p.name)+'\',this)">'+
+           (p.erinnert?'Erneut erinnern':'Erinnern')+'</button>')+
+       '</td></tr>';
+  }
+  return h+'</table></div>';
+}
+
+function ksBestaetigenKlick(btn){
+  var c=document.getElementById('ksHaken');
+  if(!c || !c.checked){
+    toast('Bitte erst den Haken setzen',true); return;
+  }
+  var fertig=laeuft(btn,'Speichert...');
+  google.script.run
+    .withSuccessHandler(function(){
+      fertig();
+      if(daten && daten.ks){ daten.ks.meins=true; daten.ks.farbe='grau'; }
+      ksAktualisieren(); ksZeigen(); toast('Danke, ist notiert'); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .ksBestaetigen(TOKEN, true);
+}
+
+function ksUnter(name,an,btn){
+  var fertig=laeuft(btn,'Speichert...');
+  google.script.run
+    .withSuccessHandler(function(){ fertig(); ksZeigen(); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .ksUnterschrift(TOKEN, name, an);
+}
+
+function ksErinnere(name,btn){
+  var fertig=laeuft(btn,'Sendet...');
+  google.script.run
+    .withSuccessHandler(function(){
+      fertig(); ksZeigen(); toast('Erinnerung an '+name+' gesendet'); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .ksErinnern(TOKEN, name);
+}
+
+laden();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mein PGM - Anmelden</title>
+    <style>
+      :root{
+        --bg:#f3f4f6; --karte:#ffffff; --text:#111827; --mut:#6b7280;
+        --linie:#d1d5db; --blau:#2563eb; --rot:#dc2626; --gruen:#16a34a;
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#0f1320; --karte:#171c2c; --text:#e6e8f0; --mut:#98a0b3;
+          --linie:#2a3148; --blau:#6366f1; --rot:#f87171; --gruen:#34d399;
+        }
+      }
+      *{ box-sizing:border-box }
+      body{
+        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+        display:flex; align-items:center; justify-content:center;
+        min-height:100vh; margin:0; padding:16px; background:var(--bg);
+        color:var(--text);
+      }
+      .karte{
+        background:var(--karte); padding:32px 26px; border-radius:14px;
+        box-shadow:0 4px 16px rgba(0,0,0,.09); max-width:390px; width:100%;
+      }
+      h2{ margin:0 0 6px; font-size:23px; font-weight:800 }
+      .sub{ color:var(--mut); font-size:14px; line-height:1.5; margin:0 0 22px }
+      label{ display:block; font-size:12px; font-weight:700; color:var(--mut);
+             margin-bottom:6px }
+      input{
+        width:100%; padding:13px 14px; font-size:16px; font-family:inherit;
+        border:1px solid var(--linie); border-radius:9px; margin-bottom:14px;
+        background:var(--karte); color:var(--text);
+      }
+      input#code{ letter-spacing:7px; text-align:center; font-size:24px;
+                  font-weight:700 }
+      button{
+        background:var(--blau); color:#fff; border:0; padding:13px 18px;
+        font-size:15px; font-weight:700; border-radius:9px; cursor:pointer;
+        width:100%; font-family:inherit;
+      }
+      button:disabled{ opacity:.55; cursor:default }
+      .zurueck{
+        background:none; color:var(--mut); font-weight:600; font-size:13px;
+        margin-top:10px; padding:8px;
+      }
+      #msg{ margin-top:16px; font-size:13.5px; line-height:1.5 }
+      #weiter{
+        display:none; margin-top:14px; font-size:15px; font-weight:700;
+        color:var(--blau); word-break:break-all;
+      }
+      .schritt2{ display:none }
+    </style>
+  </head>
+  <body>
+
+    <div class="karte">
+      <h2>Mein PGM</h2>
+      <div class="sub" id="sub">
+        Trag deine E-Mail-Adresse ein. Du bekommst einen Code zugeschickt.
+      </div>
+
+      <div id="s1">
+        <label for="mail">E-Mail-Adresse</label>
+        <input type="email" id="mail" autocomplete="email" inputmode="email"
+               placeholder="name@beispiel.de">
+        <button id="btn1" onclick="codeHolen()">Code anfordern</button>
+      </div>
+
+      <div id="s2" class="schritt2">
+        <label for="code">Code aus der E-Mail</label>
+        <input type="text" id="code" inputmode="numeric" maxlength="6"
+               autocomplete="one-time-code" placeholder="000000">
+        <button id="btn2" onclick="codeSenden()">Anmelden</button>
+        <button class="zurueck" onclick="zurueckZu1()">Andere Adresse verwenden</button>
+      </div>
+
+      <div id="msg"></div>
+      <a id="weiter" href="#" target="_top">Hier tippen, um fortzufahren</a>
+    </div>
+
+    <script>
+// ================= Verbindung zum Server =================
+// Diese Seite laeuft an zwei Orten: in Apps Script, wo es
+// google.script.run gibt, und als normale Datei auf GitHub Pages, wo es
+// das nicht gibt. Der Block unten baut auf GitHub einen Ersatz, der von
+// aussen genauso aussieht. Deshalb musste keiner der vielen Aufrufe im
+// Rest der Datei angefasst werden.
+
+// ▼▼▼ NUR DIESE ZEILE ANPASSEN ▼▼▼
+// Die Adresse der Apps-Script-App. Sie endet auf /exec und steht in
+// Apps Script unter: Bereitstellen -> Bereitstellungen verwalten.
+var SERVER = 'HIER_DIE_EXEC_ADRESSE_EINTRAGEN';
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+var AUF_GITHUB = !(typeof google !== 'undefined' &&
+                   google.script && google.script.run);
+
+// kleiner Speicher im Handy, in manchen Browsern gesperrt
+function merkeLesen(k){ try{ return localStorage.getItem(k) || ''; }catch(e){ return ''; } }
+function merkeSchreiben(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function merkeLoeschen(k){ try{ localStorage.removeItem(k); }catch(e){} }
+
+// Namen, die der Server annimmt. Die Liste muss zu API_ERLAUBT in
+// WebApp.gs passen. Kommt ein Name dazu, hier und dort eintragen.
+var AUFRUFE = ['abmelden','abrechnungPdf','abwesendHinzu','abwesendLoeschen',
+  'codeAnfordern','codePruefen','ehrenFuer','ehrenHinzu','ehrenLoeschen',
+  'elternStart','festHinzu','festLoeschen','internGesehen','kindAbmelden',
+  'kindPruefen','kindSpeichern','kinderDaten','kinderStamm','kinderSuche',
+  'ksBestaetigen','ksErinnern','ksStand','ksUnterschrift','ladeDashboard',
+  'ladeTag','loescheAbwesend','loescheTag','meinTag','meineAbwesenheiten',
+  'meldeAbwesend','meldungAntwort','meldungGesehen','meldungIntern',
+  'meldungSenden','mitarbeiterSpeichern','mitteilungSenden','monatBerechnen',
+  'monatSpeichern','nachrichtEmpfaenger','nachrichtSenden','personSpeichern',
+  'setzeAnwesend','speicherePlan','speichereVerfuegbarkeit','tagAlle',
+  'teamListe','werBinIch'];
+
+if (AUF_GITHUB) (function(){
+
+  function fehler(no, text){
+    if (no) { try{ no({ message: text }); }catch(e){} }
+  }
+
+  function senden(name, args, ok, no){
+    if (SERVER.indexOf('http') !== 0){
+      fehler(no, 'Die Serveradresse ist noch nicht eingetragen.');
+      return;
+    }
+    fetch(SERVER, {
+      method: 'POST',
+      // text/plain, weil Apps Script die Vorabfrage OPTIONS nicht
+      // beantwortet. So gilt es als einfache Anfrage.
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn: name, args: args }),
+      redirect: 'follow'
+    })
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      var a;
+      try { a = JSON.parse(text); }
+      catch(e){
+        fehler(no, 'Der Server hat keine Daten geschickt. Bitte neu laden.');
+        return;
+      }
+      if (!a || !a.ok){ fehler(no, (a && a.fehler) || 'Unbekannter Fehler'); return; }
+      if (ok) { try{ ok(a.wert); }catch(e){ if(window.console) console.log(e); } }
+    })
+    .catch(function(e){
+      fehler(no, 'Keine Verbindung: ' + ((e && e.message) || e));
+    });
+  }
+
+  // Jeder Aufruf bekommt seinen eigenen Lauf. Sonst wuerden sich zwei
+  // gleichzeitige Aufrufe die Handler gegenseitig ueberschreiben.
+  function neuerLauf(){
+    var ok = null, no = null;
+    var lauf = {
+      withSuccessHandler: function(f){ ok = f; return lauf; },
+      withFailureHandler: function(f){ no = f; return lauf; }
+    };
+    for (var i=0;i<AUFRUFE.length;i++){
+      (function(name){
+        lauf[name] = function(){
+          senden(name, Array.prototype.slice.call(arguments), ok, no);
+        };
+      })(AUFRUFE[i]);
+    }
+    return lauf;
+  }
+
+  var skript = {};
+  Object.defineProperty(skript, 'run', { get: neuerLauf });
+  window.google = { script: skript };
+})();
+
+// Symbol, Name und Offline-Betrieb fuer die Installation auf dem
+// Startbildschirm. Das gibt es nur auf GitHub, in Apps Script laeuft die
+// Seite in einem fremden Rahmen und nichts davon wuerde greifen.
+function appAnmelden(kurz, nurSymbol){
+  function kopf(tag, werte){
+    var el = document.createElement(tag);
+    for (var k in werte) el.setAttribute(k, werte[k]);
+    document.head.appendChild(el);
+  }
+  kopf('link', { rel:'icon', type:'image/png', href:'icons/' + kurz + '-64.png' });
+  // Die Elternseite soll niemand auf den Startbildschirm legen, dort
+  // reicht das Symbol im Reiter.
+  if (nurSymbol) return;
+  kopf('link', { rel:'manifest', href:'manifest-' + kurz + '.json' });
+  kopf('link', { rel:'apple-touch-icon', href:'icons/' + kurz + '-180.png' });
+  kopf('meta', { name:'theme-color', content:'#ffffff' });
+  kopf('meta', { name:'mobile-web-app-capable', content:'yes' });
+  kopf('meta', { name:'apple-mobile-web-app-capable', content:'yes' });
+  kopf('meta', { name:'apple-mobile-web-app-status-bar-style', content:'default' });
+  kopf('meta', { name:'apple-mobile-web-app-title',
+                 content: kurz === 'planer' ? 'PGM Planer' : 'Mein PGM' });
+  if (navigator.serviceWorker) {
+    try { navigator.serviceWorker.register('sw.js'); } catch(e){}
+  }
+}
+
+if (AUF_GITHUB) appAnmelden('pgm');
+// ================= Ende der Verbindung =================
+
+      var APP_URL = '<?= appUrl ?>';
+      var MAIL = '';
+      if (APP_URL.indexOf('<' + '?=') >= 0) APP_URL = '';
+
+      function el(id){ return document.getElementById(id); }
+
+      // Schon angemeldet? Dann gleich weiter, ohne Code.
+      if (AUF_GITHUB && merkeLesen('pgm_token')) {
+        location.replace((merkeLesen('pgm_admin') === '1'
+                            ? 'planer.html' : 'betreuer.html') +
+                         '?t=' + encodeURIComponent(merkeLesen('pgm_token')));
+      }
+
+      function sage(text, farbe){
+        var m = el('msg');
+        m.innerText = text || '';
+        m.style.color = farbe === 'rot' ? 'var(--rot)'
+                      : farbe === 'gruen' ? 'var(--gruen)' : 'var(--mut)';
+      }
+
+      function laeuft(btn, text){
+        var alt = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = text;
+        return function(){ btn.disabled = false; btn.innerText = alt; };
+      }
+
+      function codeHolen(){
+        var mail = el('mail').value.trim();
+        if (mail.indexOf('@') < 1){
+          sage('Bitte eine gültige E-Mail-Adresse eintragen.', 'rot');
+          return;
+        }
+        var fertig = laeuft(el('btn1'), 'Wird gesendet...');
+        sage('Einen Moment...');
+
+        google.script.run
+          .withSuccessHandler(function(r){
+            fertig();
+            if (r && r.ok){
+              MAIL = mail;
+              el('s1').style.display = 'none';
+              el('s2').style.display = 'block';
+              el('sub').innerText = 'Wir haben dir einen Code an ' + mail +
+                                    ' geschickt. Er gilt 15 Minuten.';
+              sage(r.text, 'gruen');
+              el('code').focus();
+            } else {
+              sage((r && r.text) || 'Das hat nicht geklappt.', 'rot');
+            }
+          })
+          .withFailureHandler(function(e){
+            fertig();
+            sage('Verbindungsfehler: ' + e, 'rot');
+          })
+          .codeAnfordern(mail);
+      }
+
+      function codeSenden(){
+        var code = el('code').value.replace(/[^0-9]/g, '');
+        if (code.length !== 6){
+          sage('Bitte den sechsstelligen Code eintragen.', 'rot');
+          return;
+        }
+        var fertig = laeuft(el('btn2'), 'Wird geprüft...');
+        sage('Einen Moment...');
+
+        google.script.run
+          .withSuccessHandler(function(r){
+            if (r && r.ok && AUF_GITHUB){
+              // Auf GitHub bleibt die Anmeldung im Handy und wir gehen
+              // direkt auf die passende Seite.
+              merkeSchreiben('pgm_token', r.sitzung);
+              merkeSchreiben('pgm_admin', r.admin ? '1' : '0');
+              merkeLoeschen('pgm_name');
+              sage('Angemeldet. Die App wird geladen...', 'gruen');
+              location.replace((r.admin ? 'planer.html' : 'betreuer.html') +
+                               '?t=' + encodeURIComponent(r.sitzung));
+            } else if (r && r.ok && r.url){
+              sage('Angemeldet. Die App wird geladen...', 'gruen');
+              weiter(r.url);
+            } else if (r && r.ok && !r.url){
+              fertig();
+              sage('Die Adresse der App fehlt. Bitte eine neue Version ' +
+                   'bereitstellen.', 'rot');
+            } else {
+              fertig();
+              el('code').value = '';
+              sage((r && r.text) || 'Der Code stimmt nicht.', 'rot');
+            }
+          })
+          .withFailureHandler(function(e){
+            fertig();
+            sage('Verbindungsfehler: ' + e, 'rot');
+          })
+          .codePruefen(MAIL, code);
+      }
+
+      function zurueckZu1(){
+        el('s2').style.display = 'none';
+        el('s1').style.display = 'block';
+        el('code').value = '';
+        el('sub').innerText =
+          'Trag deine E-Mail-Adresse ein. Du bekommst einen Code zugeschickt.';
+        sage('');
+        el('mail').focus();
+      }
+
+      // Die Seite laeuft in einem Sandbox-Rahmen. Ein direktes
+      // window.top.location schlaegt dort je nach Browser stillschweigend
+      // fehl, deshalb window.open mit _top und ein Link als Ersatzweg.
+      function weiter(url){
+        var a = el('weiter');
+        a.href = url;
+        setTimeout(function(){ a.style.display = 'block'; }, 1500);
+        try { window.open(url, '_top'); }
+        catch (e) { try { window.top.location.href = url; } catch (e2) {} }
+      }
+
+      // Enter-Taste
+      el('mail').addEventListener('keydown', function(ev){
+        if (ev.key === 'Enter') codeHolen();
+      });
+      el('code').addEventListener('keydown', function(ev){
+        if (ev.key === 'Enter') codeSenden();
+      });
+      el('mail').focus();
+    </script>
+  </body>
+</html>

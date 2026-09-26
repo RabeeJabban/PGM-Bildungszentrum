@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<style>
+  :root{
+    --bg:#fff;--s1:#fff;--s2:#f7f8fb;--line:#e3e6ed;--text:#151823;--mut:#6b7280;
+    --blau:#4f46e5;--ok:#059669;--warn:#dc2626;
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,"Segoe UI",Roboto,sans-serif;margin:0;
+       background:var(--bg);color:var(--text);font-size:16px}
+  header{background:var(--s1);border-bottom:1px solid var(--line);padding:11px 14px}
+  html{color-scheme:light}
+  .verein{font-size:17px;font-weight:800;line-height:1.2}
+  .schule{color:var(--mut);font-size:13px;margin-top:2px}
+  main{padding:12px 14px;max-width:560px;margin:0 auto}
+  .box{background:var(--s1);border-radius:13px;padding:13px 14px;
+       border:1px solid var(--line);margin-bottom:10px}
+  h2{font-size:16px;margin:0 0 4px;line-height:1.25}
+  .text{font-size:13.5px;line-height:1.5;color:#39404f}
+  label{display:block;font-size:12.5px;font-weight:700;color:var(--mut);
+        margin:11px 0 4px}
+  input,select,textarea{width:100%;padding:10px 11px;font-size:16px;font-family:inherit;
+       border:1px solid var(--line);border-radius:9px;background:var(--s1);
+       color:var(--text)}
+  textarea{min-height:70px;resize:vertical}
+  ::placeholder{font-size:14px;color:#9aa1ae}
+  .klein{font-size:12px;color:var(--mut);margin-top:4px}
+  .zwei{display:flex;gap:10px}
+  .zwei>div{flex:1;min-width:0}
+  .wahl{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+  .opt{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:10px;
+       background:var(--s2);cursor:pointer;border:2px solid transparent;font-size:14.5px}
+  .opt.an{border-color:var(--blau);background:#eef0fe}
+  .opt b{display:block}
+  .opt span{font-size:12.5px;color:var(--mut)}
+  .senden{width:100%;margin-top:13px;padding:13px;border:0;border-radius:11px;
+          background:var(--blau);color:#fff;font-size:16px;font-weight:700;
+          cursor:pointer;font-family:inherit}
+  .senden:disabled{opacity:.5}
+  .hinweis{margin:0 0 10px;padding:12px;border-radius:11px;font-size:14px;
+           line-height:1.45;display:none}
+  .hinweis.ok{background:#dcfce7;color:#14532d;display:block}
+  .hinweis.no{background:#fee2e2;color:#7f1d1d;display:block}
+  .anruf{display:block;text-align:center;background:var(--s2);border-radius:12px;
+         padding:11px;text-decoration:none;color:var(--blau);font-weight:700;
+         font-size:16px;border:1px solid var(--line)}
+  .anruf small{display:block;color:var(--mut);font-weight:600;font-size:12px;
+               margin-bottom:2px}
+  .fuss{color:var(--mut);font-size:12px;text-align:center;margin:10px 0 16px;
+        line-height:1.45}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="verein">Helfen Sie uns, Ihre Kinder gut zu betreuen</div>
+  <div class="schule">Für Kinder der Grundschule <span id="schulName"><?= schule ?></span></div>
+</header>
+
+<main>
+  <div class="box">
+    <div class="text">Wenn wir früh wissen, welches Kind heute nicht kommt oder
+      früher abgeholt wird, können wir Gruppen und Räume verlässlich einteilen.
+      Das gibt Sicherheit und den Kindern mehr Ruhe.</div>
+
+    <label>Vor- und Nachname des Kindes</label>
+    <input type="text" id="name" placeholder="Vorname und Nachname" autocomplete="off">
+    <div class="klein">Bitte genau so, wie Ihr Kind bei uns angemeldet ist.</div>
+
+    <div class="zwei">
+      <div>
+        <label>Klasse</label>
+        <input type="text" id="klasse" placeholder="1a bis 4d" autocomplete="off">
+      </div>
+      <div>
+        <label>Für welchen Tag</label>
+        <input type="date" id="datum">
+      </div>
+    </div>
+
+    <button class="senden" id="weiter" onclick="weiter()">Weiter</button>
+  </div>
+
+  <div class="box" id="schritt2" style="display:none">
+    <h2>Was möchten Sie uns mitteilen?</h2>
+    <div class="text" id="wer"></div>
+
+    <div class="wahl">
+      <div class="opt an" id="o1" onclick="waehle('Entschuldigt')">
+        <div><b>Mein Kind kommt nicht</b><span>Es ist entschuldigt</span></div>
+      </div>
+      <div class="opt" id="o2" onclick="waehle('Frueher')">
+        <div><b>Mein Kind wird früher abgeholt</b><span>Bitte Uhrzeit angeben</span></div>
+      </div>
+      <div class="opt" id="o3" onclick="waehle('Mitteilung')">
+        <div><b>Ich möchte etwas mitteilen</b><span>Freie Nachricht an das Team</span></div>
+      </div>
+    </div>
+
+    <div id="zeitFeld" style="display:none">
+      <label>Abholung um</label>
+      <input type="time" id="uhrzeit" value="13:30">
+    </div>
+
+    <label>Nachricht (freiwillig)</label>
+    <textarea id="nachricht" placeholder="Wenn Sie uns noch etwas sagen möchten"></textarea>
+
+    <label>Ihr Name und Telefonnummer (freiwillig)</label>
+    <input type="text" id="absender" placeholder="für Rückfragen" autocomplete="off">
+
+    <button class="senden" id="btn" onclick="senden()">Absenden</button>
+  </div>
+
+  <div class="hinweis" id="hinweis"></div>
+
+  <a class="anruf" href="tel:015750473329">
+    <small>Dringend? Rufen Sie uns an</small>0157 50473329</a>
+
+  <div class="fuss">Ihre Angaben nutzen wir ausschließlich, um die Betreuung
+    Ihres Kindes zu organisieren.</div>
+</main>
+
+<script>
+// ================= Verbindung zum Server =================
+// Diese Seite laeuft an zwei Orten: in Apps Script, wo es
+// google.script.run gibt, und als normale Datei auf GitHub Pages, wo es
+// das nicht gibt. Der Block unten baut auf GitHub einen Ersatz, der von
+// aussen genauso aussieht. Deshalb musste keiner der vielen Aufrufe im
+// Rest der Datei angefasst werden.
+
+// ▼▼▼ NUR DIESE ZEILE ANPASSEN ▼▼▼
+// Die Adresse der Apps-Script-App. Sie endet auf /exec und steht in
+// Apps Script unter: Bereitstellen -> Bereitstellungen verwalten.
+var SERVER = 'HIER_DIE_EXEC_ADRESSE_EINTRAGEN';
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+var AUF_GITHUB = !(typeof google !== 'undefined' &&
+                   google.script && google.script.run);
+
+// kleiner Speicher im Handy, in manchen Browsern gesperrt
+function merkeLesen(k){ try{ return localStorage.getItem(k) || ''; }catch(e){ return ''; } }
+function merkeSchreiben(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function merkeLoeschen(k){ try{ localStorage.removeItem(k); }catch(e){} }
+
+// Namen, die der Server annimmt. Die Liste muss zu API_ERLAUBT in
+// WebApp.gs passen. Kommt ein Name dazu, hier und dort eintragen.
+var AUFRUFE = ['abmelden','abrechnungPdf','abwesendHinzu','abwesendLoeschen',
+  'codeAnfordern','codePruefen','ehrenFuer','ehrenHinzu','ehrenLoeschen',
+  'elternStart','festHinzu','festLoeschen','internGesehen','kindAbmelden',
+  'kindPruefen','kindSpeichern','kinderDaten','kinderStamm','kinderSuche',
+  'ksBestaetigen','ksErinnern','ksStand','ksUnterschrift','ladeDashboard',
+  'ladeTag','loescheAbwesend','loescheTag','meinTag','meineAbwesenheiten',
+  'meldeAbwesend','meldungAntwort','meldungGesehen','meldungIntern',
+  'meldungSenden','mitarbeiterSpeichern','mitteilungSenden','monatBerechnen',
+  'monatSpeichern','nachrichtEmpfaenger','nachrichtSenden','personSpeichern',
+  'setzeAnwesend','speicherePlan','speichereVerfuegbarkeit','tagAlle',
+  'teamListe','werBinIch'];
+
+if (AUF_GITHUB) (function(){
+
+  function fehler(no, text){
+    if (no) { try{ no({ message: text }); }catch(e){} }
+  }
+
+  function senden(name, args, ok, no){
+    if (SERVER.indexOf('http') !== 0){
+      fehler(no, 'Die Serveradresse ist noch nicht eingetragen.');
+      return;
+    }
+    fetch(SERVER, {
+      method: 'POST',
+      // text/plain, weil Apps Script die Vorabfrage OPTIONS nicht
+      // beantwortet. So gilt es als einfache Anfrage.
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn: name, args: args }),
+      redirect: 'follow'
+    })
+    .then(function(r){ return r.text(); })
+    .then(function(text){
+      var a;
+      try { a = JSON.parse(text); }
+      catch(e){
+        fehler(no, 'Der Server hat keine Daten geschickt. Bitte neu laden.');
+        return;
+      }
+      if (!a || !a.ok){ fehler(no, (a && a.fehler) || 'Unbekannter Fehler'); return; }
+      if (ok) { try{ ok(a.wert); }catch(e){ if(window.console) console.log(e); } }
+    })
+    .catch(function(e){
+      fehler(no, 'Keine Verbindung: ' + ((e && e.message) || e));
+    });
+  }
+
+  // Jeder Aufruf bekommt seinen eigenen Lauf. Sonst wuerden sich zwei
+  // gleichzeitige Aufrufe die Handler gegenseitig ueberschreiben.
+  function neuerLauf(){
+    var ok = null, no = null;
+    var lauf = {
+      withSuccessHandler: function(f){ ok = f; return lauf; },
+      withFailureHandler: function(f){ no = f; return lauf; }
+    };
+    for (var i=0;i<AUFRUFE.length;i++){
+      (function(name){
+        lauf[name] = function(){
+          senden(name, Array.prototype.slice.call(arguments), ok, no);
+        };
+      })(AUFRUFE[i]);
+    }
+    return lauf;
+  }
+
+  var skript = {};
+  Object.defineProperty(skript, 'run', { get: neuerLauf });
+  window.google = { script: skript };
+})();
+
+// Symbol, Name und Offline-Betrieb fuer die Installation auf dem
+// Startbildschirm. Das gibt es nur auf GitHub, in Apps Script laeuft die
+// Seite in einem fremden Rahmen und nichts davon wuerde greifen.
+function appAnmelden(kurz, nurSymbol){
+  function kopf(tag, werte){
+    var el = document.createElement(tag);
+    for (var k in werte) el.setAttribute(k, werte[k]);
+    document.head.appendChild(el);
+  }
+  kopf('link', { rel:'icon', type:'image/png', href:'icons/' + kurz + '-64.png' });
+  // Die Elternseite soll niemand auf den Startbildschirm legen, dort
+  // reicht das Symbol im Reiter.
+  if (nurSymbol) return;
+  kopf('link', { rel:'manifest', href:'manifest-' + kurz + '.json' });
+  kopf('link', { rel:'apple-touch-icon', href:'icons/' + kurz + '-180.png' });
+  kopf('meta', { name:'theme-color', content:'#ffffff' });
+  kopf('meta', { name:'mobile-web-app-capable', content:'yes' });
+  kopf('meta', { name:'apple-mobile-web-app-capable', content:'yes' });
+  kopf('meta', { name:'apple-mobile-web-app-status-bar-style', content:'default' });
+  kopf('meta', { name:'apple-mobile-web-app-title',
+                 content: kurz === 'planer' ? 'PGM Planer' : 'Mein PGM' });
+  if (navigator.serviceWorker) {
+    try { navigator.serviceWorker.register('sw.js'); } catch(e){}
+  }
+}
+
+if (AUF_GITHUB) appAnmelden('pgm', true);
+// ================= Ende der Verbindung =================
+
+var CODE='<?= code ?>';
+var ART='Entschuldigt';
+
+// Auf GitHub kommt der Schulschluessel aus der Adresse (?e=...) und der
+// Name der Schule wird einmal beim Server erfragt.
+if (!CODE || CODE.indexOf('<' + '?=') >= 0) {
+  CODE = new URLSearchParams(window.location.search).get('e') || '';
+}
+(function(){
+  // Achtung: der Platzhalter steht hier im Textteil der Seite, nicht im
+  // Skript. Ein Browser wirft so etwas beim Lesen weg, also bleibt auf
+  // GitHub einfach nichts uebrig. Darum wird auf leer geprueft.
+  var el = document.getElementById('schulName');
+  if (!el) return;
+  var da = el.textContent.replace(/\s/g, '');
+  if (da && da.indexOf('<' + '?=') < 0) return;
+  el.textContent = '';
+  if (!CODE) { el.textContent = 'Bitte den Link der Schule verwenden.'; return; }
+  google.script.run
+    .withSuccessHandler(function(s){ el.textContent = (s && s.schule) || ''; })
+    .withFailureHandler(function(){ el.textContent = ''; })
+    .elternStart(CODE);
+})();
+
+document.getElementById('datum').value=new Date().toISOString().slice(0,10);
+
+function waehle(a){
+  ART=a;
+  document.getElementById('o1').className='opt'+(a==='Entschuldigt'?' an':'');
+  document.getElementById('o2').className='opt'+(a==='Frueher'?' an':'');
+  document.getElementById('o3').className='opt'+(a==='Mitteilung'?' an':'');
+  document.getElementById('zeitFeld').style.display=(a==='Frueher'?'':'none');
+}
+
+function zeige(text,ok){
+  var el=document.getElementById('hinweis');
+  el.textContent=text;
+  el.className='hinweis '+(ok?'ok':'no');
+}
+
+function weiter(){
+  var name=document.getElementById('name').value;
+  var klasse=document.getElementById('klasse').value;
+  var datum=document.getElementById('datum').value;
+  if(name.replace(/\s/g,'').length<3 || !klasse){
+    zeige('Bitte Name und Klasse des Kindes eintragen.',false); return; }
+  if(!datum){ zeige('Bitte einen Tag wählen.',false); return; }
+
+  var btn=document.getElementById('weiter');
+  btn.disabled=true; btn.textContent='Einen Moment...';
+
+  google.script.run
+    .withSuccessHandler(function(){
+      btn.disabled=false; btn.textContent='Weiter';
+      document.getElementById('hinweis').className='hinweis';
+      document.getElementById('schritt2').style.display='';
+      var d=new Date(datum);
+      document.getElementById('wer').textContent=
+        name.replace(/\s+/g,' ')+', Klasse '+klasse+', für den '+
+        d.toLocaleDateString('de-DE');
+      document.getElementById('schritt2').scrollIntoView({behavior:'smooth'});
+    })
+    .withFailureHandler(function(e){
+      btn.disabled=false; btn.textContent='Weiter';
+      document.getElementById('schritt2').style.display='none';
+      zeige(e.message,false);
+    })
+    .kindPruefen(CODE, name, klasse);
+}
+
+function senden(){
+  var d={ name:document.getElementById('name').value,
+          klasse:document.getElementById('klasse').value,
+          datum:document.getElementById('datum').value,
+          art:ART,
+          uhrzeit:document.getElementById('uhrzeit').value,
+          nachricht:document.getElementById('nachricht').value,
+          absender:document.getElementById('absender').value };
+
+  var btn=document.getElementById('btn');
+  btn.disabled=true; btn.textContent='Wird gesendet...';
+
+  google.script.run
+    .withSuccessHandler(function(){
+      btn.textContent='Absenden'; btn.disabled=false;
+      zeige('Danke, Ihre Nachricht ist angekommen. Das Betreuungsteam wird informiert.',true);
+      document.getElementById('nachricht').value='';
+      document.getElementById('schritt2').style.display='none';
+    })
+    .withFailureHandler(function(e){
+      btn.textContent='Absenden'; btn.disabled=false;
+      zeige(e.message,false);
+    })
+    .meldungSenden(CODE, d);
+}
+</script>
+</body>
+</html>
