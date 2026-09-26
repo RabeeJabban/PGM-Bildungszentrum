@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PGM Portal</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #f3f4f6;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <iframe id="portalFrame" src="https://script.google.com/macros/s/AKfycbzx8ohenELNCaoecX7hvr_SkYClwj2Hak8vWjNpDSOJrxqqwOIdBP77n-X7JGLxTjn29A/exec?t=df0729c6afd948d99ac89af1"></iframe>
+
+  <script>
+    // Leitet URL-Parameter wie ?t=... oder ?e=... direkt an das Google-Skript weiter
+    var params = window.location.search;
+    if (params) {
+      var frame = document.getElementById('portalFrame');
+      frame.src = frame.src.split('?')[0] + params;
+    }
+  </script>
+</body>
+</html>
