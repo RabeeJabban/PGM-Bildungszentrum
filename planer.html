@@ -821,7 +821,8 @@ function pruefe(j){
   }
   var b=0;
   for(var i=0;i<j.leute.length;i++) if(rolleVon(j.leute[i])==='betreuer') b++;
-  if(!b && !praktAllein(j)) return 'kein Betreuer dabei';
+   // Beim Empfang darf jeder stehen, auch ein Praktikant.
+  if(!b && j.art!=='Empfang' && !praktAllein(j)) return 'kein Betreuer dabei';
   if(j.kinder.length > j.leute.length*8) return 'zu wenig Personen';
   if(j.raum!==null && !j.raum) return 'kein Raum gewählt';
   return '';
