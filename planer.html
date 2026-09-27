@@ -796,6 +796,22 @@ function raumBelegt(raum,job){
 }
 
 // gibt den Grund zurück, warum ein Einsatz noch nicht fertig ist, sonst ''
+  // Ausnahme: eine EZ-Gruppe unter acht Kindern darf auch ein Praktikant
+// allein fuehren. Der Plan laesst das durch, schreibt es aber auf die Karte,
+// damit man beim Durchsehen sofort sieht, wo es passiert ist.
+// Fuer BUT, die Abholung und den Empfang gilt die Ausnahme nicht.
+var EZ_PRAKT_MAX = 8;
+
+function praktAllein(j){
+  if(j.art!=='EZ' || j.kinder.length >= EZ_PRAKT_MAX) return false;
+  var betr=0, prak=0;
+  for(var i=0;i<j.leute.length;i++){
+    var r=rolleVon(j.leute[i]);
+    if(r==='betreuer') betr++;
+    else if(r==='praktikant') prak++;
+  }
+  return betr===0 && prak>0;
+}
 function pruefe(j){
   if(!j.leute.length) return 'niemand eingeteilt';
   for(var a=0;a<j.leute.length;a++){
@@ -805,7 +821,7 @@ function pruefe(j){
   }
   var b=0;
   for(var i=0;i<j.leute.length;i++) if(rolleVon(j.leute[i])==='betreuer') b++;
-  if(!b) return 'kein Betreuer dabei';
+  if(!b && !praktAllein(j)) return 'kein Betreuer dabei';
   if(j.kinder.length > j.leute.length*8) return 'zu wenig Personen';
   if(j.raum!==null && !j.raum) return 'kein Raum gewählt';
   return '';
@@ -1011,6 +1027,8 @@ function karteHtml(j){
         (j.raum?'<span class="chip raum">'+j.raum+'</span>':'')+
         (j.fest?'<span class="chip fest">fest</span>':'')+
         (j.zuKlein?'<span class="chip warn">unter 4</span>':'')+
+            (j.zuKlein?'<span class="chip warn">unter 4</span>':'')+
+        (praktAllein(j)?'<span class="chip warn">Praktikant führt</span>':'')+
         '</div>';
   if(j.leute.length) h+='<div class="wer">Eingeteilt: <b>'+j.leute.join(', ')+'</b></div>';
   if(problem) h+='<div class="prob">'+problem+'</div>';
