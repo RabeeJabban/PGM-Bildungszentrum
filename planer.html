@@ -124,6 +124,7 @@
            font-weight:600;cursor:pointer;background:rgba(245,158,11,.14);
            color:var(--gelb)}
   .gesehen.alle{background:rgba(16,185,129,.14);color:var(--ok)}
+  .gesehen.fehlt{background:rgba(220,38,38,.13);color:var(--warn)}
 
   .rahmen{overflow-x:auto;background:#fff;border-radius:12px;
           box-shadow:0 1px 3px rgba(18,22,45,.07)}
@@ -1064,36 +1065,71 @@ function eingeteilte(){
   return l;
 }
 
+// wer von den Eingeteilten ueberhaupt in der App angemeldet ist
+function nichtAngemeldet(){
+  var ang=(daten && daten.angemeldet) || [], wer=eingeteilte(), l=[];
+  for(var i=0;i<wer.length;i++) if(ang.indexOf(wer[i])<0) l.push(wer[i]);
+  return l;
+}
+
 function gesehenHtml(){
-  if(!planFrei()) return '';
   var wer=eingeteilte();
   if(!wer.length) return '';
-  var g=(daten && daten.planGesehen) || {}, n=0;
-  for(var i=0;i<wer.length;i++) if(g[wer[i]]) n++;
-  var alle=(n===wer.length);
-  return '<div class="gesehen'+(alle?' alle':'')+'" onclick="gesehenZeigen()">'+
-         n+' von '+wer.length+' haben den Plan gesehen'+
-         (alle?'':' · antippen für die Liste')+'</div>';
+  var h='';
+
+  // Wer nicht angemeldet ist, sieht den Plan gar nicht. Das zeigen wir
+  // auch beim Entwurf, damit man es vor dem Freigeben merkt.
+  var ohne=nichtAngemeldet();
+  if(ohne.length)
+    h+='<div class="gesehen fehlt" onclick="gesehenZeigen()">'+ohne.length+
+       (ohne.length===1?' Eingeteilter ist':' Eingeteilte sind')+
+       ' noch nicht in der App angemeldet · antippen</div>';
+
+  if(planFrei()){
+    var g=(daten && daten.planGesehen) || {}, n=0;
+    for(var i=0;i<wer.length;i++) if(g[wer[i]]) n++;
+    var alle=(n===wer.length);
+    h+='<div class="gesehen'+(alle?' alle':'')+'" onclick="gesehenZeigen()">'+
+       n+' von '+wer.length+' haben den Plan gesehen'+
+       (alle?'':' · antippen für die Liste')+'</div>';
+  }
+  return h;
 }
 
 function gesehenZeigen(){
   var wer=eingeteilte(), g=(daten && daten.planGesehen) || {};
-  var ja='', nein='';
-  for(var i=0;i<wer.length;i++){
-    if(g[wer[i]])
-      ja+='<div class="trow"><div><b>'+wer[i]+'</b><div class="kl">gesehen um '+
-          g[wer[i]]+' Uhr</div></div></div>';
-    else
-      nein+='<div class="trow"><div><b>'+wer[i]+'</b>'+
-            '<div class="kl" style="color:var(--warn);font-weight:600">'+
-            'noch nicht gesehen</div></div></div>';
+  var ang=(daten && daten.angemeldet) || [];
+  var frei=planFrei();
+  var ja='', offen='', ohne='';
+
+  function zeile(name, text, farbe){
+    return '<div class="trow"><div><b>'+name+'</b><div class="kl"'+
+           (farbe?' style="color:'+farbe+';font-weight:600"':'')+'>'+text+
+           '</div></div></div>';
   }
-  var h='<h3>Wer hat den Plan gesehen?</h3>'+
-        '<div class="wann">Gezählt wird ab der letzten Freigabe.</div>';
-  if(nein) h+='<div class="akopf" style="margin-top:14px">'+
-              '<span class="atitel">Offen</span><span class="alinie"></span></div>'+nein;
-  if(ja) h+='<div class="akopf" style="margin-top:14px">'+
-            '<span class="atitel">Gesehen</span><span class="alinie"></span></div>'+ja;
+
+  for(var i=0;i<wer.length;i++){
+    var n=wer[i];
+    if(ang.indexOf(n)<0)
+      ohne+=zeile(n,'nicht in der App angemeldet','var(--warn)');
+    else if(g[n])
+      ja+=zeile(n,'gesehen um '+g[n]+' Uhr','var(--ok)');
+    else
+      offen+=zeile(n, frei?'noch nicht gesehen':'angemeldet','var(--gelb)');
+  }
+
+  function kopf(titel){
+    return '<div class="akopf" style="margin-top:14px"><span class="atitel">'+
+           titel+'</span><span class="alinie"></span></div>';
+  }
+
+  var h='<h3>'+(frei?'Wer hat den Plan gesehen?':'Wer ist eingeteilt?')+'</h3>'+
+        '<div class="wann">'+
+        (frei?'Gezählt wird ab der letzten Freigabe.'
+             :'Der Plan ist noch nicht freigegeben.')+'</div>';
+  if(ohne)  h+=kopf('Nicht angemeldet')+ohne;
+  if(offen) h+=kopf(frei?'Angemeldet, aber noch nicht gesehen':'Angemeldet')+offen;
+  if(ja)    h+=kopf('Gesehen')+ja;
   h+='<div class="akt"><button class="btn hell" onclick="zu()">Schließen</button></div>';
   document.getElementById('box').innerHTML=h;
   document.getElementById('modal').className='modal auf';
