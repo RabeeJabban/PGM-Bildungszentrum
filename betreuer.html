@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <base target="_top">
 <style>
   :root{
@@ -479,9 +479,11 @@
 // aussen genauso aussieht. Deshalb musste keiner der vielen Aufrufe im
 // Rest der Datei angefasst werden.
 
-
+// ▼▼▼ NUR DIESE ZEILE ANPASSEN ▼▼▼
+// Die Adresse der Apps-Script-App. Sie endet auf /exec und steht in
+// Apps Script unter: Bereitstellen -> Bereitstellungen verwalten.
 var SERVER = 'https://script.google.com/macros/s/AKfycbx0AeoHkhd-Xna-AADqKUyhJfgwzmj2y1ghzLul89cemq-aGg0kPWoMv8pZ3GD9hJeffA/exec';
-
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 var AUF_GITHUB = !(typeof google !== 'undefined' &&
                    google.script && google.script.run);
@@ -1674,6 +1676,13 @@ function maLaden(fn){
     .teamListe(TOKEN);
 }
 
+// zaehlt, wie viele aus der Liste gerade angemeldet sind
+function angGezaehlt(){
+  var n=0;
+  for(var i=0;i<MA.length;i++) if(MA[i].angemeldet) n++;
+  return n;
+}
+
 function maListeHtml(){
   if(!MA) return '<div class="info">Lade...</div>';
   var aktiv=0;
@@ -1681,7 +1690,8 @@ function maListeHtml(){
 
   var h='<div class="akopf" style="margin-top:22px">'+
         '<span class="atitel">Team</span>'+
-        '<span class="azahl">'+aktiv+' von '+MA.length+' aktiv</span>'+
+        '<span class="azahl">'+aktiv+' von '+MA.length+' aktiv · '+
+        angGezaehlt()+' angemeldet</span>'+
         '<span class="alinie"></span>'+
         '<button class="btn hell" onclick="maFormular(null)">+ Neuer Mitarbeiter</button></div>';
 
@@ -1694,7 +1704,16 @@ function maListeHtml(){
        (p.aktiv?'':', inaktiv')+(p.kinder?', Kinder':'')+(p.team?', Team':'')+
        (p.meldung?', Meldungen':'')+(p.kinderschutz?', Kinderschutz':'')+
        (p.nachricht?', Nachrichten':'')+
-       ' · Token '+p.token+'</div></div>'+
+       ' · Token '+p.token+'</div>'+
+       (p.angemeldet
+         ? '<div class="kl" style="color:var(--ok);font-weight:600">angemeldet'+
+           (p.seit?' seit '+p.seit:'')+'</div>'
+         : (p.aktiv
+             ? '<div class="kl" style="color:var(--warn);font-weight:600">'+
+               'noch nicht angemeldet'+
+               (p.email?'':' · keine E-Mail hinterlegt')+'</div>'
+             : ''))+
+       '</div>'+
        '<div class="zweisch">'+
        '<div class="sch1"><span>aktiv</span><div class="schalter'+(p.aktiv?' an':'')+
        '" onclick="maSchalter('+i+',\'aktiv\',this)"><i></i></div></div>'+
