@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <base target="_top">
 <style>
   :root{
@@ -120,6 +120,10 @@
   .wer{margin-top:7px;font-size:12.5px;color:var(--mut)}
   .wer b{color:var(--text)}
   .prob{margin-top:6px;font-size:12px;color:var(--gelb);font-weight:600}
+  .gesehen{margin:0 2px 12px;padding:9px 12px;border-radius:9px;font-size:13px;
+           font-weight:600;cursor:pointer;background:rgba(245,158,11,.14);
+           color:var(--gelb)}
+  .gesehen.alle{background:rgba(16,185,129,.14);color:var(--ok)}
 
   .rahmen{overflow-x:auto;background:#fff;border-radius:12px;
           box-shadow:0 1px 3px rgba(18,22,45,.07)}
@@ -501,7 +505,9 @@
 // aussen genauso aussieht. Deshalb musste keiner der vielen Aufrufe im
 // Rest der Datei angefasst werden.
 
-
+// ▼▼▼ NUR DIESE ZEILE ANPASSEN ▼▼▼
+// Die Adresse der Apps-Script-App. Sie endet auf /exec und steht in
+// Apps Script unter: Bereitstellen -> Bereitstellungen verwalten.
 var SERVER = 'https://script.google.com/macros/s/AKfycbx0AeoHkhd-Xna-AADqKUyhJfgwzmj2y1ghzLul89cemq-aGg0kPWoMv8pZ3GD9hJeffA/exec';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
@@ -795,11 +801,11 @@ function raumBelegt(raum,job){
   return null;
 }
 
-// gibt den Grund zurück, warum ein Einsatz noch nicht fertig ist, sonst ''
-  // Ausnahme: eine EZ-Gruppe unter acht Kindern darf auch ein Praktikant
+// Ausnahme: eine EZ-Gruppe unter acht Kindern darf auch ein Praktikant
 // allein fuehren. Der Plan laesst das durch, schreibt es aber auf die Karte,
 // damit man beim Durchsehen sofort sieht, wo es passiert ist.
-// Fuer BUT, die Abholung und den Empfang gilt die Ausnahme nicht.
+// Fuer BUT und die Abholung gilt die Ausnahme nicht. Der Empfang ist
+// weiter unten geregelt, dort darf ohnehin jeder stehen.
 var EZ_PRAKT_MAX = 8;
 
 function praktAllein(j){
@@ -812,6 +818,8 @@ function praktAllein(j){
   }
   return betr===0 && prak>0;
 }
+
+// gibt den Grund zurück, warum ein Einsatz noch nicht fertig ist, sonst ''
 function pruefe(j){
   if(!j.leute.length) return 'niemand eingeteilt';
   for(var a=0;a<j.leute.length;a++){
@@ -821,7 +829,7 @@ function pruefe(j){
   }
   var b=0;
   for(var i=0;i<j.leute.length;i++) if(rolleVon(j.leute[i])==='betreuer') b++;
-   // Beim Empfang darf jeder stehen, auch ein Praktikant.
+  // Beim Empfang darf jeder stehen, auch ein Praktikant.
   if(!b && j.art!=='Empfang' && !praktAllein(j)) return 'kein Betreuer dabei';
   if(j.kinder.length > j.leute.length*8) return 'zu wenig Personen';
   if(j.raum!==null && !j.raum) return 'kein Raum gewählt';
@@ -1028,12 +1036,67 @@ function karteHtml(j){
         (j.raum?'<span class="chip raum">'+j.raum+'</span>':'')+
         (j.fest?'<span class="chip fest">fest</span>':'')+
         (j.zuKlein?'<span class="chip warn">unter 4</span>':'')+
-            (j.zuKlein?'<span class="chip warn">unter 4</span>':'')+
         (praktAllein(j)?'<span class="chip warn">Praktikant führt</span>':'')+
         '</div>';
   if(j.leute.length) h+='<div class="wer">Eingeteilt: <b>'+j.leute.join(', ')+'</b></div>';
   if(problem) h+='<div class="prob">'+problem+'</div>';
   return h+'</div>';
+}
+
+// ---------- Wer hat den freigegebenen Plan gesehen ----------
+// Der Server vermerkt jeden, der den freigegebenen Plan oeffnet, und
+// leert den Vermerk bei jeder neuen Freigabe.
+
+function planFrei(){
+  var g=(daten && daten.gespeichert) || [];
+  for(var i=0;i<g.length;i++)
+    if(String(g[i].status).replace(/^\s+|\s+$/g,'')==='Freigegeben') return true;
+  return false;
+}
+
+// alle, die an diesem Tag eingeteilt sind
+function eingeteilte(){
+  var l=[];
+  for(var i=0;i<jobs.length;i++)
+    for(var n=0;n<jobs[i].leute.length;n++)
+      if(l.indexOf(jobs[i].leute[n])<0) l.push(jobs[i].leute[n]);
+  l.sort(function(a,b){ return String(a).localeCompare(String(b)); });
+  return l;
+}
+
+function gesehenHtml(){
+  if(!planFrei()) return '';
+  var wer=eingeteilte();
+  if(!wer.length) return '';
+  var g=(daten && daten.planGesehen) || {}, n=0;
+  for(var i=0;i<wer.length;i++) if(g[wer[i]]) n++;
+  var alle=(n===wer.length);
+  return '<div class="gesehen'+(alle?' alle':'')+'" onclick="gesehenZeigen()">'+
+         n+' von '+wer.length+' haben den Plan gesehen'+
+         (alle?'':' · antippen für die Liste')+'</div>';
+}
+
+function gesehenZeigen(){
+  var wer=eingeteilte(), g=(daten && daten.planGesehen) || {};
+  var ja='', nein='';
+  for(var i=0;i<wer.length;i++){
+    if(g[wer[i]])
+      ja+='<div class="trow"><div><b>'+wer[i]+'</b><div class="kl">gesehen um '+
+          g[wer[i]]+' Uhr</div></div></div>';
+    else
+      nein+='<div class="trow"><div><b>'+wer[i]+'</b>'+
+            '<div class="kl" style="color:var(--warn);font-weight:600">'+
+            'noch nicht gesehen</div></div></div>';
+  }
+  var h='<h3>Wer hat den Plan gesehen?</h3>'+
+        '<div class="wann">Gezählt wird ab der letzten Freigabe.</div>';
+  if(nein) h+='<div class="akopf" style="margin-top:14px">'+
+              '<span class="atitel">Offen</span><span class="alinie"></span></div>'+nein;
+  if(ja) h+='<div class="akopf" style="margin-top:14px">'+
+            '<span class="atitel">Gesehen</span><span class="alinie"></span></div>'+ja;
+  h+='<div class="akt"><button class="btn hell" onclick="zu()">Schließen</button></div>';
+  document.getElementById('box').innerHTML=h;
+  document.getElementById('modal').className='modal auf';
 }
 
 function zeichne(){
@@ -1064,7 +1127,8 @@ function zeichne(){
       return String(x.schule).localeCompare(String(z.schule));
     });
 
-    var h='<div class="abschnitt"><div class="akopf">'+
+    var h=gesehenHtml();
+    h+='<div class="abschnitt"><div class="akopf">'+
           '<span class="atitel">Offen</span>'+
           '<span class="azahl">'+offen.length+' Einsätze</span>'+
           '<span class="alinie"></span></div>';
@@ -1103,7 +1167,8 @@ function zeichne(){
     h+='<div class="abschnitt"><div class="akopf">'+
        '<span class="atitel">Eingeteilt</span>'+
        '<span class="azahl">'+spalten.length+' Personen</span>'+
-       '<span class="alinie"></span></div>';
+       '<span class="alinie"></span>'+
+       '<button class="btn hell" onclick="empfangFrei()">+ Empfang</button></div>';
 
     if(!spalten.length){
       h+='<div class="info">Noch niemand eingeteilt. Oben einen Einsatz antippen.</div>';
@@ -1328,7 +1393,7 @@ function malEmpfang(){
   var h='<h3>Empfang für '+em.name+'</h3>'+
         '<div class="wann">Am Eingang stehen und die Kinder in Empfang nehmen</div>'+
         '<div class="feld"><label>Beginn</label><div class="wert">'+hhmm(em.von)+
-        ' Uhr, direkt nach der Abholung</div></div>';
+        ' Uhr'+(em.frei?'':', direkt nach der Abholung')+'</div></div>';
 
   if(!enden.length){
     h+='<div class="hinw no">'+em.name+' hat direkt danach schon einen Einsatz, '+
@@ -1353,6 +1418,109 @@ function malEmpfang(){
      '</div>';
 
   document.getElementById('box').innerHTML=h;
+}
+
+// ---------- Empfang ohne Abholung ----------
+// Fuer den Fall, dass jemand nur am Eingang steht und sonst nichts hat.
+// Angeboten wird nur, wer an dem Tag Zeit hat und nicht abwesend ist.
+
+var emF = { name:'', von:0 };
+
+function empfangFrei(){
+  emF.name=''; emF.von=0;
+  emFreiMalen();
+  document.getElementById('modal').className='modal auf';
+}
+
+function emLeute(){
+  var l=[], ps=(daten && daten.personen) || [];
+  for(var i=0;i<ps.length;i++)
+    if(ps[i].verfuegbar && !ps[i].abwesend) l.push(ps[i].name);
+  l.sort(function(x,z){
+    var px=istPrakt(x)?1:0, pz=istPrakt(z)?1:0;
+    if(px!==pz) return px-pz;
+    return String(x).localeCompare(String(z));
+  });
+  return l;
+}
+
+// moegliche Anfangszeiten: in der Arbeitszeit und nicht in einem Einsatz,
+// den die Person an dem Tag schon hat
+function emStarts(name){
+  var p=person(name);
+  if(!p) return [];
+  var a=min(p.von)||START, b=min(p.bis)||ENDE;
+  var l=[];
+  for(var t=Math.ceil(a/15)*15; t<b; t+=15){
+    var frei=true;
+    for(var i=0;i<jobs.length;i++){
+      var x=jobs[i];
+      if(x.leute.indexOf(name)<0) continue;
+      if(t>=x.von && t<endeFuer(name,x)){ frei=false; break; }
+    }
+    if(frei) l.push(t);
+  }
+  return l;
+}
+
+function emFreiWahl(){
+  emF.name=document.getElementById('efWer').value;
+  emF.von=0;
+  emFreiMalen();
+}
+
+function emFreiMalen(){
+  var leute=emLeute();
+  if(emF.name && leute.indexOf(emF.name)<0) emF.name='';
+  if(!emF.name && leute.length) emF.name=leute[0];
+
+  var h='<h3>Empfang eintragen</h3>'+
+        '<div class="wann">Am Eingang stehen und die Kinder in Empfang nehmen</div>';
+  var starts=[];
+
+  if(!leute.length){
+    h+='<div class="hinw no">Für diesen Tag hat niemand Zeit.</div>';
+  }else{
+    h+='<div class="feld"><label>Wer</label>'+
+       '<select id="efWer" style="width:100%;padding:10px;font-size:15px" '+
+       'onchange="emFreiWahl()">';
+    for(var i=0;i<leute.length;i++)
+      h+='<option'+(leute[i]===emF.name?' selected':'')+'>'+leute[i]+'</option>';
+    h+='</select></div>';
+
+    starts=emStarts(emF.name);
+    if(emF.von && starts.indexOf(emF.von)<0) emF.von=0;
+    if(!emF.von && starts.length) emF.von=starts[0];
+
+    if(!starts.length){
+      h+='<div class="hinw no">'+emF.name+' ist an dem Tag durchgehend eingeteilt, '+
+         'für einen Empfang bleibt keine Zeit.</div>';
+    }else{
+      h+='<div class="feld"><label>Beginn</label>'+
+         '<select id="efVon" style="width:100%;padding:10px;font-size:15px" '+
+         'onchange="emF.von=parseInt(this.value,10)">';
+      for(var s=0;s<starts.length;s++)
+        h+='<option value="'+starts[s]+'"'+(starts[s]===emF.von?' selected':'')+'>'+
+           hhmm(starts[s])+' Uhr</option>';
+      h+='</select></div>';
+    }
+  }
+
+  h+='<div class="akt"><button class="btn hell" onclick="zu()">Abbrechen</button>'+
+     (starts.length
+       ?'<button class="btn primer" onclick="emFreiWeiter()">Weiter</button>':'')+
+     '</div>';
+
+  document.getElementById('box').innerHTML=h;
+}
+
+function emFreiWeiter(){
+  var s=document.getElementById('efVon');
+  if(s) emF.von=parseInt(s.value,10);
+  if(!emF.name || !emF.von){ toast('Bitte Person und Beginn wählen',true); return; }
+  em={ job:null, name:emF.name, von:emF.von, frei:true,
+       max:emGrenze(emF.name, emF.von, null), bis:0 };
+  malEmpfang();
 }
 
 function emUebernehmen(){
@@ -2351,6 +2519,13 @@ function maLaden(fn){
     .teamListe(TOKEN);
 }
 
+// zaehlt, wie viele aus der Liste gerade angemeldet sind
+function angGezaehlt(){
+  var n=0;
+  for(var i=0;i<MA.length;i++) if(MA[i].angemeldet) n++;
+  return n;
+}
+
 function maListeHtml(){
   if(!MA) return '<div class="info">Lade...</div>';
   var aktiv=0;
@@ -2358,7 +2533,8 @@ function maListeHtml(){
 
   var h='<div class="akopf" style="margin-top:22px">'+
         '<span class="atitel">Team</span>'+
-        '<span class="azahl">'+aktiv+' von '+MA.length+' aktiv</span>'+
+        '<span class="azahl">'+aktiv+' von '+MA.length+' aktiv · '+
+        angGezaehlt()+' angemeldet</span>'+
         '<span class="alinie"></span>'+
         '<button class="btn hell" onclick="maFormular(null)">+ Neuer Mitarbeiter</button></div>';
 
@@ -2371,7 +2547,16 @@ function maListeHtml(){
        (p.aktiv?'':', inaktiv')+(p.kinder?', Kinder':'')+(p.team?', Team':'')+
        (p.meldung?', Meldungen':'')+(p.kinderschutz?', Kinderschutz':'')+
        (p.nachricht?', Nachrichten':'')+
-       ' · Token '+p.token+'</div></div>'+
+       ' · Token '+p.token+'</div>'+
+       (p.angemeldet
+         ? '<div class="kl" style="color:var(--ok);font-weight:600">angemeldet'+
+           (p.seit?' seit '+p.seit:'')+'</div>'
+         : (p.aktiv
+             ? '<div class="kl" style="color:var(--warn);font-weight:600">'+
+               'noch nicht angemeldet'+
+               (p.email?'':' · keine E-Mail hinterlegt')+'</div>'
+             : ''))+
+       '</div>'+
        '<div class="zweisch">'+
        '<div class="sch1"><span>aktiv</span><div class="schalter'+(p.aktiv?' an':'')+
        '" onclick="maSchalter('+i+',\'aktiv\',this)"><i></i></div></div>'+
