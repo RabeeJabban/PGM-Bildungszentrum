@@ -289,6 +289,14 @@
   .kakt .btn{flex:1 1 130px;padding:12px;font-size:15px}
   .abm{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
   .kzeiten{margin-top:7px;font-size:12.5px;color:var(--mut)}
+  table.t{width:100%;border-collapse:collapse;background:var(--s1);border-radius:11px;
+          overflow:hidden;box-shadow:0 1px 3px rgba(18,22,45,.07);font-size:13.5px;
+          color:var(--text)}
+  table.t th{text-align:left;padding:9px 11px;background:var(--s2);font-size:12px;
+             color:var(--mut)}
+  table.t td{padding:9px 11px;border-top:1px solid var(--line)}
+  table.t td.rechts{text-align:right}
+  table.t td:before{content:''}
   @media (max-width:600px){ .tage{grid-template-columns:repeat(2,1fr)} }
   .modus{display:flex;gap:6px;margin-bottom:10px}
   .modus div{flex:1;text-align:center;padding:10px 8px;border-radius:10px;background:var(--s3);
@@ -411,6 +419,23 @@
   }
 
   @media (max-width:600px){
+    /* Auf dem Handy wird aus jeder Tabellenzeile eine Karte.
+       thead und tbody muessen dabei auch auf block stehen, sonst bleibt
+       die Tabellenbreite erhalten und die Karten sind nur halb so breit. */
+    table.t{display:block;box-shadow:none;background:transparent;width:100%}
+    table.t thead,table.t tbody{display:block;width:100%}
+    table.t tr{display:block;width:auto;background:var(--s1);border-radius:11px;
+               padding:11px 13px;margin-bottom:8px;color:var(--text);
+               box-shadow:0 1px 3px rgba(18,22,45,.07)}
+    table.t tr:first-child{display:none}
+    table.t td{display:flex;justify-content:space-between;gap:10px;
+               border:0;padding:3px 0;font-size:14px;color:var(--text)}
+    table.t td:before{content:attr(data-l);color:var(--mut);font-size:12px;
+                      font-weight:650;flex:none}
+    table.t td.rechts{justify-content:flex-end;padding-top:9px;
+                      border-top:1px solid var(--line);margin-top:6px}
+    table.t td.rechts:before{content:''}
+    table.t td.rechts .btn{width:100%;padding:10px}
     header{padding:10px 12px}
     .titel{font-size:17px}
     .tabs{padding:0 8px}
