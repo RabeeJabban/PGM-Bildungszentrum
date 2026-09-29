@@ -1589,7 +1589,9 @@ function status(){
   z.className='zahl'+(schlecht?' klick':'');
   document.getElementById('balken').style.width=
     (jobs.length? ok/jobs.length*100 : 0)+'%';
-  document.getElementById('btnFrei').disabled=(schlecht>0 || !jobs.length);
+  // Freigeben ist auch mit offenen Einsaetzen erlaubt. Vor dem Freigeben
+  // wird nachgefragt, die roten Hinweise bleiben danach stehen.
+  document.getElementById('btnFrei').disabled=(!jobs.length);
   if(!jobs.length) meld('Keine Einsätze','');
   else if(schlecht) meld(schlecht+' offen, antippen zum Anzeigen','rot klick');
   else meld('Alles besetzt','gruen');
@@ -1621,6 +1623,17 @@ function kindLabel(k){
 
 function speichern(st,btn){
   if(!daten){ toast('Erst einen Tag laden',true); return; }
+
+  // Beim Freigeben nachfragen, wenn noch etwas offen ist
+  if(st==='Freigegeben'){
+    var offen=0;
+    for(var o=0;o<jobs.length;o++) if(pruefe(jobs[o])) offen++;
+    if(offen && !confirm(offen+(offen===1?' Einsatz ist':' Einsätze sind')+
+        ' noch nicht fertig.\n\nTrotzdem freigeben? Die Mitarbeiter sehen dann '+
+        'nur, was schon eingeteilt ist. Die offenen Stellen bleiben bei dir rot '+
+        'markiert.')) return;
+  }
+
   var zeilen=[];
   for(var i=0;i<jobs.length;i++){
     var j=jobs[i];
