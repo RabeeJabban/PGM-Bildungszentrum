@@ -230,11 +230,12 @@
   .info{padding:36px 20px;text-align:center;color:var(--mut);font-size:14px}
   .info.rot{color:var(--warn)}
 
-  table.t{width:100%;border-collapse:collapse;background:#fff;border-radius:11px;
-          overflow:hidden;box-shadow:0 1px 3px rgba(18,22,45,.07);font-size:13.5px}
-  table.t th{text-align:left;padding:9px 11px;background:#f6f7fa;font-size:12px;
+  table.t{width:100%;border-collapse:collapse;background:var(--s1);border-radius:11px;
+          overflow:hidden;box-shadow:0 1px 3px rgba(18,22,45,.07);font-size:13.5px;
+          color:var(--text)}
+  table.t th{text-align:left;padding:9px 11px;background:var(--s2);font-size:12px;
              color:var(--mut)}
-  table.t td{padding:9px 11px;border-top:1px solid #f0f2f7}
+  table.t td{padding:9px 11px;border-top:1px solid var(--line)}
   table.t td.rechts{text-align:right}
   table.t td:before{content:''}
   .zeile-form{background:#fff;border-radius:11px;padding:13px;margin-bottom:12px;
@@ -423,16 +424,21 @@
     .zeile-form select,.zeile-form input{width:100%;padding:10px;font-size:15px}
     .zeile-form .btn{width:100%;padding:12px;font-size:15px}
 
-    table.t{display:block;box-shadow:none;background:transparent}
-    table.t tr{display:block;background:#fff;border-radius:11px;padding:11px 13px;
-               margin-bottom:8px;box-shadow:0 1px 3px rgba(18,22,45,.07)}
+    /* Auf dem Handy wird aus jeder Tabellenzeile eine Karte.
+       thead und tbody muessen dabei auch auf block stehen, sonst bleibt
+       die Tabellenbreite erhalten und die Karten sind nur halb so breit. */
+    table.t{display:block;box-shadow:none;background:transparent;width:100%}
+    table.t thead,table.t tbody{display:block;width:100%}
+    table.t tr{display:block;width:auto;background:var(--s1);border-radius:11px;
+               padding:11px 13px;margin-bottom:8px;color:var(--text);
+               box-shadow:0 1px 3px rgba(18,22,45,.07)}
     table.t tr:first-child{display:none}
     table.t td{display:flex;justify-content:space-between;gap:10px;
-               border:0;padding:3px 0;font-size:14px}
+               border:0;padding:3px 0;font-size:14px;color:var(--text)}
     table.t td:before{content:attr(data-l);color:var(--mut);font-size:12px;
-                      font-weight:650}
+                      font-weight:650;flex:none}
     table.t td.rechts{justify-content:flex-end;padding-top:9px;
-                      border-top:1px solid #f0f2f7;margin-top:6px}
+                      border-top:1px solid var(--line);margin-top:6px}
     table.t td.rechts:before{content:''}
     table.t td.rechts .btn{width:100%;padding:10px}
     .toast{bottom:84px}
