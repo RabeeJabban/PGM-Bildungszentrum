@@ -851,7 +851,7 @@ function pruefe(j){
   if(!b && j.art!=='Empfang' && !praktAllein(j)) return 'kein Betreuer dabei';
   // In eine BUT-Gruppe passen mehr Kinder. Wie viele Betreuer dafuer
   // noetig sind, entscheidet der Planer selbst.
-  var proKopf = (j.art==='BUT') ? 12 : 8;
+ var proKopf = 8;
   if(j.kinder.length > j.leute.length*proKopf) return 'zu wenig Personen';
   if(j.raum!==null && !j.raum) return 'kein Raum gewählt';
   return '';
