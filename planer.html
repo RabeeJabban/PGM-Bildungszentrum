@@ -1990,10 +1990,12 @@ function ehLoeschen(name,art,stunden,btn){
 
 var abrModus='monat', abrVon='', abrBis='', abrMonatWert='';
 var abrTagWert='', abrFilter='';
+var abrPersName='', APERSON=null;
 
 // liefert entweder "2026-09" oder {von, bis}
 function abrZeitraum(){
-  if(abrModus==='monat') return document.getElementById('abrMonat').value;
+  if(abrModus==='monat'||abrModus==='person')
+    return document.getElementById('abrMonat').value;
   if(abrModus==='tag'){
     var t=document.getElementById('abrTag').value;
     return { von:t, bis:t };
@@ -2003,7 +2005,7 @@ function abrZeitraum(){
 }
 function abrModusSetzen(m){
   abrMerken();
-  abrModus=m; abr=null; EHREN=null;
+  abrModus=m; abr=null; EHREN=null; APERSON=null;
   zeichneAbr();
 }
 function abrMerken(){
@@ -2012,6 +2014,7 @@ function abrMerken(){
   var b=document.getElementById('abrBis'); if(b) abrBis=b.value;
   var t=document.getElementById('abrTag'); if(t) abrTagWert=t.value;
   var f=document.getElementById('abrSuche'); if(f) abrFilter=f.value;
+  var pz=document.getElementById('abrPers'); if(pz&&pz.value) abrPersName=pz.value;
 }
 
 function zeichneAbr(){
@@ -2024,11 +2027,16 @@ function zeichneAbr(){
   if(!abrVon) abrVon=abrBis.slice(0,8)+'01';
   if(!abrTagWert) abrTagWert=heute.toISOString().slice(0,10);
 
-  var h='<div class="modus" style="max-width:520px">'+
+  var reiter='<div class="modus" style="max-width:660px">'+
         '<div class="'+(abrModus==='monat'?'an':'')+'" onclick="abrModusSetzen(\'monat\')">Monat</div>'+
+        '<div class="'+(abrModus==='person'?'an':'')+'" onclick="abrModusSetzen(\'person\')">Mitarbeiter</div>'+
         '<div class="'+(abrModus==='tag'?'an':'')+'" onclick="abrModusSetzen(\'tag\')">Tag</div>'+
         '<div class="'+(abrModus==='zeit'?'an':'')+'" onclick="abrModusSetzen(\'zeit\')">Zeitraum</div>'+
-        '</div>'+
+        '</div>';
+
+  if(abrModus==='person'){ zeichneAbrPerson(reiter); return; }
+
+  var h=reiter+
         '<div class="zeile-form"><div class="reihe2">'+
         (abrModus==='monat'
           ? '<div class="fg"><label>Monat</label>'+
@@ -2058,6 +2066,63 @@ function zeichneAbr(){
   if(abr) abrTabelle();
   document.getElementById('inhalt').insertAdjacentHTML('beforeend', ehrenForm());
   if(abrModus==='monat'){ ehRechnen(); if(!EHREN) ehrenLaden(); }
+}
+
+// Reiter Mitarbeiter: Monat und Person wählen, dann nur diese Abrechnung
+function zeichneAbrPerson(reiter){
+  var liste='';
+  if(EHREN){
+    for(var i=0;i<EHREN.personen.length;i++){
+      var pe=EHREN.personen[i];
+      liste+='<option value="'+pe.name+'"'+
+             (pe.name===abrPersName?' selected':'')+'>'+pe.name+
+             (pe.aktiv?'':' (inaktiv)')+'</option>';
+    }
+  } else {
+    liste='<option value="">Lade...</option>';
+  }
+
+  var h=reiter+
+    '<div class="zeile-form"><div class="reihe2">'+
+    '<div class="fg"><label>Monat</label>'+
+    '<input type="month" id="abrMonat" value="'+abrMonatWert+'"></div>'+
+    '<div class="fg"><label>Mitarbeiter</label>'+
+    '<select id="abrPers">'+liste+'</select></div>'+
+    '<button class="btn primer" onclick="abrPersonLaden(this)">Berechnen</button>'+
+    (APERSON
+      ? '<button class="btn hell" onclick="abrPersonPdf(\''+
+        q(APERSON.person.name)+'\',this)">Als PDF</button>':'')+
+    '</div>'+
+    '<div class="kl" style="margin-top:8px">Zeigt jeden einzelnen Einsatz dieses '+
+    'Mitarbeiters im gewählten Monat, zum Durchgehen bei Rückfragen. Das PDF '+
+    'landet immer im Drive-Ordner "PGM Abrechnungen".</div>'+
+    '</div>'+
+    '<div id="abrTabelle">'+
+    (APERSON
+      ? '<div class="akopf"><span class="atitel">'+APERSON.person.name+' '+
+        (APERSON.person.nachname||'')+'</span><span class="alinie"></span></div>'+
+        '<div class="wann">'+APERSON.zeitraum+' &middot; <b>'+
+        APERSON.person.betrag.toFixed(2)+' &euro;</b></div>'+
+        abrDetailHtml(APERSON)
+      : '')+
+    '</div>';
+
+  document.getElementById('inhalt').innerHTML=h;
+  if(!EHREN) ehrenLaden();
+}
+
+function abrPersonLaden(btn){
+  abrMerken();
+  var sel=document.getElementById('abrPers');
+  var name=sel?sel.value:'';
+  if(!name){ toast('Bitte einen Mitarbeiter wählen',true); return; }
+  abrPersName=name;
+  var fertig=laeuft(btn,'Rechnet...');
+  google.script.run
+    .withSuccessHandler(function(d){ fertig(); APERSON=d; zeichneAbr(); })
+    .withFailureHandler(function(e){ fertig(); APERSON=null; zeichneAbr();
+      toast(e.message,true); })
+    .monatPerson(TOKEN, abrZeitraum(), name);
 }
 
 function abrSuchen(){
@@ -2205,7 +2270,9 @@ function abrDetail(name,btn){
     .monatPerson(TOKEN, abrZeitraum(), name);
 }
 
-function abrDetailZeigen(d){
+// Summenzeile, Tabelle und Fußnote. Wird im Reiter Mitarbeiter und im
+// Dialog aus der Monatsliste gleich benutzt.
+function abrDetailHtml(d){
   var p=d.person, z=d.zeilen||[];
   var r='';
   for(var i=0;i<z.length;i++){
@@ -2230,18 +2297,23 @@ function abrDetailZeigen(d){
   if(p.warte) teile.push('Wartezeit '+p.warte.toFixed(2)+' h');
   if(p.but) teile.push('BUT '+p.but+' Einheiten');
 
-  document.getElementById('box').className='box breit';
-  document.getElementById('box').innerHTML=
-    '<h3>'+p.name+' '+(p.nachname||'')+'</h3>'+
-    '<div class="wann">'+d.zeitraum+' &middot; '+p.betrag.toFixed(2)+' &euro;</div>'+
-    (teile.length?'<div class="kl" style="margin:-8px 0 12px">'+teile.join(' &middot; ')+
-      '</div>':'')+
+  return (teile.length?'<div class="kl" style="margin:-8px 0 12px">'+
+           teile.join(' &middot; ')+'</div>':'')+
     '<table class="t"><tr><th>Tag</th><th>Schule</th><th>Aufgabe</th><th>Zeit</th>'+
     '<th>Menge</th><th>Betrag</th></tr>'+r+
     '<tr><td data-l="Gesamt"><b>Gesamt '+p.betrag.toFixed(2)+' &euro;</b></td></tr></table>'+
     '<div class="kl" style="margin-top:10px">Abholungen werden bis zu 15 Minuten über '+
     'das Ende hinaus bezahlt, wenn danach nichts direkt folgt. Lücken zwischen zwei '+
-    'Einsätzen am selben Tag gelten als Wartezeit.</div>'+
+    'Einsätzen am selben Tag gelten als Wartezeit.</div>';
+}
+
+function abrDetailZeigen(d){
+  var p=d.person;
+  document.getElementById('box').className='box breit';
+  document.getElementById('box').innerHTML=
+    '<h3>'+p.name+' '+(p.nachname||'')+'</h3>'+
+    '<div class="wann">'+d.zeitraum+' &middot; '+p.betrag.toFixed(2)+' &euro;</div>'+
+    abrDetailHtml(d)+
     '<div class="akt" style="margin-top:14px">'+
     '<button class="btn hell" onclick="zu()">Schließen</button>'+
     '<button class="btn primer" onclick="abrPersonPdf(\''+q(p.name)+'\',this)">Als PDF</button>'+
