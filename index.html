@@ -3,7 +3,6 @@
   <head>
     <base target="_top">
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mein PGM - Anmelden</title>
     <style>
@@ -92,6 +91,9 @@
 // aussen genauso aussieht. Deshalb musste keiner der vielen Aufrufe im
 // Rest der Datei angefasst werden.
 
+// ▼▼▼ NUR DIESE ZEILE ANPASSEN ▼▼▼
+// Die Adresse der Apps-Script-App. Sie endet auf /exec und steht in
+// Apps Script unter: Bereitstellen -> Bereitstellungen verwalten.
 var SERVER = 'https://script.google.com/macros/s/AKfycbx0AeoHkhd-Xna-AADqKUyhJfgwzmj2y1ghzLul89cemq-aGg0kPWoMv8pZ3GD9hJeffA/exec';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
@@ -105,16 +107,20 @@ function merkeLoeschen(k){ try{ localStorage.removeItem(k); }catch(e){} }
 
 // Namen, die der Server annimmt. Die Liste muss zu API_ERLAUBT in
 // WebApp.gs passen. Kommt ein Name dazu, hier und dort eintragen.
-var AUFRUFE = ['abmelden','abrechnungPdf','abwesendHinzu','abwesendLoeschen',
+var AUFRUFE = ['abgemeldetListe','abmelden','abrechnungPdf','abwesendHinzu',
+  'abwesendLoeschen',
   'codeAnfordern','codePruefen','ehrenFuer','ehrenHinzu','ehrenLoeschen',
   'elternStart','festHinzu','festLoeschen','internGesehen','kindAbmelden',
-  'kindPruefen','kindSpeichern','kinderDaten','kinderStamm','kinderSuche',
+  'kindPruefen','kindSpeichern','kindWiederAnmelden','kinderDaten',
+  'kinderStamm','kinderSuche',
   'ksBestaetigen','ksErinnern','ksStand','ksUnterschrift','ladeDashboard',
   'ladeTag','loescheAbwesend','loescheTag','meinTag','meineAbwesenheiten',
   'meldeAbwesend','meldungAntwort','meldungGesehen','meldungIntern',
   'meldungSenden','mitarbeiterSpeichern','mitteilungSenden','monatBerechnen',
+  'monatPerson','monatPersonPdf',
   'monatSpeichern','nachrichtEmpfaenger','nachrichtSenden','personSpeichern',
-  'setzeAnwesend','speicherePlan','speichereVerfuegbarkeit','tagAlle',
+  'setzeAktiv','setzeAnwesend','setzeKinderRecht','setzeTeamRecht',
+  'speicherePlan','speichereVerfuegbarkeit','tagAlle',
   'teamListe','werBinIch'];
 
 if (AUF_GITHUB) (function(){
