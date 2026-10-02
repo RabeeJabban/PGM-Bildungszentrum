@@ -520,14 +520,17 @@ function merkeLoeschen(k){ try{ localStorage.removeItem(k); }catch(e){} }
 
 // Namen, die der Server annimmt. Die Liste muss zu API_ERLAUBT in
 // WebApp.gs passen. Kommt ein Name dazu, hier und dort eintragen.
-var AUFRUFE = ['abmelden','abrechnungPdf','abwesendHinzu','abwesendLoeschen',
+var AUFRUFE = ['abgemeldetListe','abmelden','abrechnungPdf','abwesendHinzu',
+  'abwesendLoeschen',
   'codeAnfordern','codePruefen','ehrenFuer','ehrenHinzu','ehrenLoeschen',
   'elternStart','festHinzu','festLoeschen','internGesehen','kindAbmelden',
-  'kindPruefen','kindSpeichern','kinderDaten','kinderStamm','kinderSuche',
+  'kindPruefen','kindSpeichern','kindWiederAnmelden','kinderDaten',
+  'kinderStamm','kinderSuche',
   'ksBestaetigen','ksErinnern','ksStand','ksUnterschrift','ladeDashboard',
   'ladeTag','loescheAbwesend','loescheTag','meinTag','meineAbwesenheiten',
   'meldeAbwesend','meldungAntwort','meldungGesehen','meldungIntern',
   'meldungSenden','mitarbeiterSpeichern','mitteilungSenden','monatBerechnen',
+  'monatPerson','monatPersonPdf',
   'monatSpeichern','nachrichtEmpfaenger','nachrichtSenden','personSpeichern',
   'setzeAktiv','setzeAnwesend','setzeKinderRecht','setzeTeamRecht',
   'speicherePlan','speichereVerfuegbarkeit','tagAlle',
