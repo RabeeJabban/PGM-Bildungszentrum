@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <base target="_top">
 <style>
   :root{
@@ -69,12 +69,14 @@
 
     <label>Vor- und Nachname des Kindes</label>
     <input type="text" id="name" placeholder="Vorname und Nachname" autocomplete="off">
-    <div class="klein">Bitte genau so, wie Ihr Kind bei uns angemeldet ist.</div>
+    <div class="klein">Bitte genau so, wie Ihr Kind bei uns angemeldet ist.
+      Die Klasse brauchen wir nur, wenn es den Namen bei uns mehrfach gibt.</div>
 
     <div class="zwei">
       <div>
-        <label>Klasse</label>
-        <input type="text" id="klasse" placeholder="1a bis 4d" autocomplete="off">
+        <label>Klasse (freiwillig)</label>
+        <input type="text" id="klasse" placeholder="nur die Zahl, 1 bis 4"
+               inputmode="numeric" autocomplete="off">
       </div>
       <div>
         <label>Für welchen Tag</label>
@@ -132,7 +134,9 @@
 // aussen genauso aussieht. Deshalb musste keiner der vielen Aufrufe im
 // Rest der Datei angefasst werden.
 
-
+// ▼▼▼ NUR DIESE ZEILE ANPASSEN ▼▼▼
+// Die Adresse der Apps-Script-App. Sie endet auf /exec und steht in
+// Apps Script unter: Bereitstellen -> Bereitstellungen verwalten.
 var SERVER = 'https://script.google.com/macros/s/AKfycbx0AeoHkhd-Xna-AADqKUyhJfgwzmj2y1ghzLul89cemq-aGg0kPWoMv8pZ3GD9hJeffA/exec';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
@@ -146,16 +150,20 @@ function merkeLoeschen(k){ try{ localStorage.removeItem(k); }catch(e){} }
 
 // Namen, die der Server annimmt. Die Liste muss zu API_ERLAUBT in
 // WebApp.gs passen. Kommt ein Name dazu, hier und dort eintragen.
-var AUFRUFE = ['abmelden','abrechnungPdf','abwesendHinzu','abwesendLoeschen',
+var AUFRUFE = ['abgemeldetListe','abmelden','abrechnungPdf','abwesendHinzu',
+  'abwesendLoeschen',
   'codeAnfordern','codePruefen','ehrenFuer','ehrenHinzu','ehrenLoeschen',
   'elternStart','festHinzu','festLoeschen','internGesehen','kindAbmelden',
-  'kindPruefen','kindSpeichern','kinderDaten','kinderStamm','kinderSuche',
+  'kindPruefen','kindSpeichern','kindWiederAnmelden','kinderDaten',
+  'kinderStamm','kinderSuche',
   'ksBestaetigen','ksErinnern','ksStand','ksUnterschrift','ladeDashboard',
   'ladeTag','loescheAbwesend','loescheTag','meinTag','meineAbwesenheiten',
   'meldeAbwesend','meldungAntwort','meldungGesehen','meldungIntern',
   'meldungSenden','mitarbeiterSpeichern','mitteilungSenden','monatBerechnen',
+  'monatPerson','monatPersonPdf',
   'monatSpeichern','nachrichtEmpfaenger','nachrichtSenden','personSpeichern',
-  'setzeAnwesend','speicherePlan','speichereVerfuegbarkeit','tagAlle',
+  'setzeAktiv','setzeAnwesend','setzeKinderRecht','setzeTeamRecht',
+  'speicherePlan','speichereVerfuegbarkeit','tagAlle',
   'teamListe','werBinIch'];
 
 if (AUF_GITHUB) (function(){
@@ -289,21 +297,33 @@ function weiter(){
   var name=document.getElementById('name').value;
   var klasse=document.getElementById('klasse').value;
   var datum=document.getElementById('datum').value;
-  if(name.replace(/\s/g,'').length<3 || !klasse){
-    zeige('Bitte Name und Klasse des Kindes eintragen.',false); return; }
+  if(name.replace(/\s/g,'').length<3){
+    zeige('Bitte den Vor- und Nachnamen des Kindes eintragen.',false); return; }
   if(!datum){ zeige('Bitte einen Tag wählen.',false); return; }
 
   var btn=document.getElementById('weiter');
   btn.disabled=true; btn.textContent='Einen Moment...';
 
   google.script.run
-    .withSuccessHandler(function(){
+    .withSuccessHandler(function(r){
       btn.disabled=false; btn.textContent='Weiter';
+
+      // Den Namen gibt es mehrfach: nach der Klassenstufe fragen
+      if(r && r.mehrere){
+        document.getElementById('schritt2').style.display='none';
+        zeige('Es gibt mehrere Kinder mit diesem Namen. Bitte die Klasse '+
+              'eintragen: '+(r.klassen||[]).join(' oder '),false);
+        var kf=document.getElementById('klasse');
+        if(kf){ kf.focus(); kf.scrollIntoView({behavior:'smooth',block:'center'}); }
+        return;
+      }
+
       document.getElementById('hinweis').className='hinweis';
       document.getElementById('schritt2').style.display='';
       var d=new Date(datum);
+      var kl=(r && r.klasse) ? r.klasse : klasse;
       document.getElementById('wer').textContent=
-        name.replace(/\s+/g,' ')+', Klasse '+klasse+', für den '+
+        name.replace(/\s+/g,' ')+(kl?', Klasse '+kl:'')+', für den '+
         d.toLocaleDateString('de-DE');
       document.getElementById('schritt2').scrollIntoView({behavior:'smooth'});
     })
