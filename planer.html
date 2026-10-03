@@ -2302,7 +2302,9 @@ function abrDetailHtml(d){
     '<table class="t"><tr><th>Tag</th><th>Schule</th><th>Aufgabe</th><th>Zeit</th>'+
     '<th>Menge</th><th>Betrag</th></tr>'+r+
     '<tr><td data-l="Gesamt"><b>Gesamt '+p.betrag.toFixed(2)+' &euro;</b></td></tr></table>'+
-        '<div class="kl" style="margin-top:10px">Automatisch erstellt.</div>';
+    '<div class="kl" style="margin-top:10px">Abholungen werden bis zu 15 Minuten über '+
+    'das Ende hinaus bezahlt, wenn danach nichts direkt folgt. Lücken zwischen zwei '+
+    'Einsätzen am selben Tag gelten als Wartezeit.</div>';
 }
 
 function abrDetailZeigen(d){
@@ -2420,7 +2422,7 @@ function abgLaden(){
   google.script.run
     .withSuccessHandler(function(l){
       ABGladt=false; ABG=l||[];
-      if(ansicht==='kind' && sModus==='weg') sucheFiltern(); })
+      if(ansicht==='kind' && sModus==='weg'){ filterZeichnen(); sucheFiltern(); } })
     .withFailureHandler(function(e){
       ABGladt=false;
       var el=document.getElementById('sErgebnis');
@@ -2494,7 +2496,7 @@ function filterZeichnen(){
   if(!el) return;
   // In der Abgemeldet-Liste gibt es KDATEN noch nicht, dort kommen die
   // Schulen aus der Liste selbst.
-  var schulen=KDATEN?KDATEN.schulen:[];
+  var schulen=(KDATEN&&KDATEN.schulen)?KDATEN.schulen:[];
   if(sModus==='weg' && ABG){
     schulen=[];
     for(var s=0;s<ABG.length;s++)
@@ -2807,7 +2809,7 @@ function kindAbmeldenKlick(btn){
   var fertig=laeuft(btn,'Meldet ab...');
   google.script.run
     .withSuccessHandler(function(){
-      fertig(); KSTAMM=null; daten=null;
+      fertig(); KSTAMM=null; daten=null; KDATEN=null; ABG=null;
       toast(name+' abgemeldet'); zeigeSuche(); })
     .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
     .kindAbmelden(TOKEN, kAlt, document.getElementById('kfGrund').value);
