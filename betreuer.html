@@ -1352,23 +1352,92 @@ function zeigeSuche(){
   // Der Name bleibt in der Kopfzeile stehen. Der Zusatz darunter sagt,
   // wo man gerade ist.
   var s=document.getElementById('sub');
-  if(s) s.textContent=sModus==='wo'?'Wo ist das Kind heute?':'Kontakt der Eltern';
+  if(s) s.textContent = sModus==='wo' ? 'Wo ist das Kind heute?'
+                      : sModus==='kontakt' ? 'Kontakt der Eltern'
+                      : 'Abgemeldete Kinder wieder anmelden';
 
   document.getElementById('inhalt').innerHTML=
     '<div class="modus">'+
     '<div class="'+(sModus==='wo'?'an':'')+'" onclick="setzeModus(\'wo\')">Wo ist das Kind heute?</div>'+
     '<div class="'+(sModus==='kontakt'?'an':'')+'" onclick="setzeModus(\'kontakt\')">Kontakt</div>'+
+    (darfKinder()
+      ?'<div class="'+(sModus==='weg'?'an':'')+'" onclick="setzeModus(\'weg\')">Abgemeldet</div>'
+      :'')+
     '</div>'+
     '<div class="suche">'+
     '<input type="text" id="sName" placeholder="Vor- oder Nachname" '+
     'oninput="sucheFiltern()" autocomplete="off">'+
-    (darfKinder()?'<button class="btn primer" onclick="kindNeu()">+ Neues Kind</button>':'')+
+    (darfKinder()&&sModus!=='weg'
+      ?'<button class="btn primer" onclick="kindNeu()">+ Neues Kind</button>':'')+
     '</div>'+
     '<div id="sFilter"></div>'+
     '<div id="sErgebnis"><div class="info">Lade...</div></div>';
 
   var n=document.getElementById('sName'); if(n) n.focus();
+
+  if(sModus==='weg'){
+    filterZeichnen();
+    if(ABG) sucheFiltern(); else abgLaden();
+    return;
+  }
   if(KDATEN) { filterZeichnen(); sucheFiltern(); } else kDatenLaden();
+}
+
+// ---------- Abgemeldete Kinder ----------
+var ABG=null, ABGladt=false, kWieder=null, kVorlage=null;
+
+function abgLaden(){
+  if(ABGladt) return;
+  ABGladt=true;
+  google.script.run
+    .withSuccessHandler(function(l){
+      ABGladt=false; ABG=l||[];
+      if(ansicht==='kind' && sModus==='weg'){ filterZeichnen(); sucheFiltern(); } })
+    .withFailureHandler(function(e){
+      ABGladt=false;
+      var el=document.getElementById('sErgebnis');
+      if(el) el.innerHTML='<div class="info">'+e.message+'</div>'; })
+    .abgemeldetListe(TOKEN);
+}
+
+function abgZeichnen(el,n){
+  if(!ABG){ el.innerHTML='<div class="info">Lade...</div>'; return; }
+  var l=[];
+  for(var i=0;i<ABG.length;i++){
+    var x=ABG[i];
+    if(sSchule && x.schule!==sSchule) continue;
+    if(n && x.name.toLowerCase().indexOf(n)<0) continue;
+    l.push(i);
+  }
+  if(!l.length){
+    el.innerHTML='<div class="info">'+
+      (ABG.length?'Kein Treffer.':'Es ist kein Kind abgemeldet.')+'</div>';
+    return;
+  }
+  var h='';
+  for(var j=0;j<l.length;j++){
+    var k=ABG[l[j]];
+    h+='<div class="kkarte"><div class="kname">'+k.name+'</div>'+
+       '<div class="kl">'+k.schule+', Klasse '+k.klasse+
+       (k.status==='BUT'?' · BUT':'')+'</div>'+
+       '<div class="kl">abgemeldet am '+(k.am||'unbekannt')+
+       (k.grund?' · '+k.grund:'')+'</div>'+
+       '<div class="kakt"><button class="btn primer" onclick="kindWiederForm('+l[j]+')">'+
+       'Wieder anmelden</button></div></div>';
+  }
+  el.innerHTML=h;
+}
+
+// oeffnet das normale Formular, vorausgefuellt mit den alten Angaben
+function kindWiederForm(i){
+  var k=ABG[i];
+  if(!k) return;
+  kWieder={ vorname:k.vorname, nachname:k.nachname, schule:k.schule,
+            klasse:k.klasse, am:k.am };
+  kVorlage={ schule:k.schule, vorname:k.vorname, nachname:k.nachname,
+             klasse:k.klasse, status:k.status, Mo:k.Mo, Di:k.Di, Mi:k.Mi, Do:k.Do,
+             telefon:k.telefon, allein:k.allein };
+  kStammDann(function(){ kindFormular(null); });
 }
 
 function setzeModus(m){ sModus=m; zeigeSuche(); }
@@ -1394,11 +1463,21 @@ function kDatenLaden(neu){
 
 function filterZeichnen(){
   var el=document.getElementById('sFilter');
-  if(!el || !KDATEN) return;
+  if(!el) return;
+  // In der Abgemeldet-Liste gibt es KDATEN noch nicht, dort kommen die
+  // Schulen aus der Liste selbst.
+  var schulen=(KDATEN&&KDATEN.schulen)?KDATEN.schulen:[];
+  if(sModus==='weg' && ABG){
+    schulen=[];
+    for(var s=0;s<ABG.length;s++)
+      if(ABG[s].schule && schulen.indexOf(ABG[s].schule)<0) schulen.push(ABG[s].schule);
+    schulen.sort();
+  }
+  if(!schulen.length){ el.innerHTML=''; return; }
   var h='<div class="sfilter"><span class="'+(sSchule?'':'an')+'" '+
         'onclick="setzeSchule(\'\')">Alle Schulen</span>';
-  for(var i=0;i<KDATEN.schulen.length;i++){
-    var sc=KDATEN.schulen[i];
+  for(var i=0;i<schulen.length;i++){
+    var sc=schulen[i];
     h+='<span class="'+(sSchule===sc?'an':'')+'" onclick="setzeSchule(\''+q(sc)+'\')">'+sc+'</span>';
   }
   el.innerHTML=h+'</div>';
@@ -1413,17 +1492,21 @@ function passt(x,n){
 }
 
 function sucheFiltern(){
-  if(!KDATEN) return;
+  // Die Abgemeldet-Liste braucht KDATEN nicht, die hat ihre eigenen Daten.
+  if(!KDATEN && sModus!=='weg') return;
   var el=document.getElementById('sErgebnis');
   if(!el) return;
   var f=document.getElementById('sName');
   var n=f?f.value.trim().toLowerCase():'';
 
-  if(!n && !sSchule){
+  // In der Abgemeldet-Liste wird gleich alles gezeigt, die ist kurz.
+  if(sModus!=='weg' && !n && !sSchule){
     el.innerHTML='<div class="info">Namen eingeben oder eine Schule wählen.</div>';
     return;
   }
-  if(sModus==='wo') woZeichnen(el,n); else kontaktZeichnen(el,n);
+  if(sModus==='weg') abgZeichnen(el,n);
+  else if(sModus==='wo') woZeichnen(el,n);
+  else kontaktZeichnen(el,n);
 }
 
 function mn(z){
@@ -1547,7 +1630,8 @@ var KTAGE=[['Mo','Montag'],['Di','Dienstag'],['Mi','Mittwoch'],['Do','Donnerstag
 function darfKinder(){ return CHEF || (daten && daten.darfKinder); }
 function darfAbmelden(){ return CHEF; }
 
-function kindNeu(){ kAlt=null; kStammDann(function(){ kindFormular(null); }); }
+function kindNeu(){ kAlt=null; kWieder=null; kVorlage=null;
+  kStammDann(function(){ kindFormular(null); }); }
 
 function kStammDann(fn){
   if(KSTAMM){ fn(); return; }
@@ -1576,10 +1660,14 @@ function kindBearbeiten(name,schule,klasse){
 
 function kindFormular(i){
   kAlt=(i===null||i===undefined)?null:kTreffer[i];
-  var k=kAlt||{schule:KSTAMM.schulen[0]||'', vorname:'', nachname:'', klasse:'',
-               status:'EZ', Mo:'', Di:'', Mi:'', Do:'', telefon:'', allein:''};
+  if(kAlt) { kWieder=null; kVorlage=null; }
+  var k=kAlt||kVorlage||{schule:KSTAMM.schulen[0]||'', vorname:'', nachname:'',
+               klasse:'', status:'EZ', Mo:'', Di:'', Mi:'', Do:'',
+               telefon:'', allein:''};
   var sub=document.getElementById('sub');
-  if(sub) sub.textContent=kAlt?'Kind bearbeiten':'Neues Kind anmelden';
+  if(sub) sub.textContent = kAlt ? 'Kind bearbeiten'
+                          : kWieder ? 'Wieder anmelden, Klasse bitte prüfen'
+                          : 'Neues Kind anmelden';
 
   var h='<div class="kform">'+
     '<div class="zeile">'+
@@ -1670,13 +1758,18 @@ function kindSpeichernKlick(btn){
   if(!tage && !confirm('Für keinen Tag ist eine Abholzeit eingetragen. Trotzdem speichern?')) return;
 
   var fertig=laeuft(btn,'Speichert...');
-  google.script.run
+  var wieder=kWieder;
+  var lauf=google.script.run
     .withSuccessHandler(function(){
-      fertig(); KSTAMM=null; daten=null;
-      toast(neu.vorname+' '+neu.nachname+(kAlt?' gespeichert':' angemeldet'));
+      fertig(); KSTAMM=null; daten=null; KDATEN=null;
+      if(wieder){ ABG=null; kWieder=null; kVorlage=null; }
+      toast(neu.vorname+' '+neu.nachname+
+            (kAlt?' gespeichert':(wieder?' wieder angemeldet':' angemeldet')));
+      if(wieder) sModus='weg';
       zeigeSuche(); })
-    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
-    .kindSpeichern(TOKEN, kAlt, neu);
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); });
+  if(wieder) lauf.kindWiederAnmelden(TOKEN, wieder, neu);
+  else lauf.kindSpeichern(TOKEN, kAlt, neu);
 }
 
 function kindAbmeldenKlick(btn){
@@ -1686,7 +1779,7 @@ function kindAbmeldenKlick(btn){
   var fertig=laeuft(btn,'Meldet ab...');
   google.script.run
     .withSuccessHandler(function(){
-      fertig(); KSTAMM=null; daten=null;
+      fertig(); KSTAMM=null; daten=null; KDATEN=null; ABG=null;
       toast(name+' abgemeldet'); zeigeSuche(); })
     .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
     .kindAbmelden(TOKEN, kAlt, document.getElementById('kfGrund').value);
