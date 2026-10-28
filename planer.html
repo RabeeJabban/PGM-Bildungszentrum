@@ -530,7 +530,7 @@ function merkeLoeschen(k){ try{ localStorage.removeItem(k); }catch(e){} }
 // Namen, die der Server annimmt. Die Liste muss zu API_ERLAUBT in
 // WebApp.gs passen. Kommt ein Name dazu, hier und dort eintragen.
 var AUFRUFE = ['abgemeldetListe','abmelden','abrechnungPdf','abwesendHinzu',
-  'abwesendLoeschen',
+  'abwesendLoeschen','abwesendZeitraumLoeschen',
   'codeAnfordern','codePruefen','ehrenFuer','ehrenHinzu','ehrenLoeschen',
   'elternStart','festHinzu','festLoeschen','internGesehen','kindAbmelden',
   'kindPruefen','kindSpeichern','kindWiederAnmelden','kinderDaten',
@@ -538,6 +538,7 @@ var AUFRUFE = ['abgemeldetListe','abmelden','abrechnungPdf','abwesendHinzu',
   'ksBestaetigen','ksErinnern','ksStand','ksUnterschrift','ladeDashboard',
   'ladeTag','loescheAbwesend','loescheTag','meinTag','meineAbwesenheiten',
   'meldeAbwesend','meldungAntwort','meldungGesehen','meldungIntern',
+  'meineAbrechnung',
   'meldungSenden','mitarbeiterSpeichern','mitteilungSenden','monatBerechnen',
   'monatPerson','monatPersonPdf',
   'monatSpeichern','nachrichtEmpfaenger','nachrichtSenden','personSpeichern',
@@ -1823,16 +1824,119 @@ function fLoeschen(name,tag,art,schule,raum,btn){
     .festLoeschen(TOKEN, name, tag, art, schule, raum);
 }
 
+var einstModus='abwesend', abwOffen={};
+
+// naechster Betreuungstag nach einem Datum, Fr/Sa/So werden uebersprungen
+function naechsterArbeitstag(iso){
+  var t=String(iso).split('-');
+  var d=new Date(Number(t[0]),Number(t[1])-1,Number(t[2]),12,0,0);
+  do { d.setDate(d.getDate()+1); } while(d.getDay()<1 || d.getDay()>4);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+
+         '-'+('0'+d.getDate()).slice(-2);
+}
+
+// Aus den einzelnen Tagen werden zusammenhaengende Zeitraeume. Gleiche Person,
+// gleicher Grund und direkt aufeinanderfolgende Betreuungstage gehoeren zusammen.
+function abwGruppen(liste){
+  var l=(liste||[]).slice().sort(function(a,b){
+    return String(a.name).localeCompare(String(b.name)) ||
+           String(a.datum).localeCompare(String(b.datum)); });
+  var g=[];
+  for(var i=0;i<l.length;i++){
+    var e=l[i], v=g[g.length-1];
+    if(v && v.name===e.name && v.grund===(e.grund||'') &&
+       naechsterArbeitstag(v.bis)===e.datum){
+      v.bis=e.datum; v.tage.push(e.datum);
+    }else{
+      g.push({ name:e.name, grund:e.grund||'', von:e.datum, bis:e.datum,
+               tage:[e.datum] });
+    }
+  }
+  g.sort(function(a,b){
+    return String(a.von).localeCompare(String(b.von)) ||
+           String(a.name).localeCompare(String(b.name)); });
+  return g;
+}
+
+function abwSchalter(g){ return q(g.name)+'|'+g.von; }
+
+function abwListeHtml(){
+  var g=abwGruppen(dash.abwesend);
+  var h='<table class="t"><tr><th>Zeitraum</th><th>Person</th><th>Grund</th>'+
+        '<th></th></tr>';
+  if(!g.length){
+    h+='<tr><td colspan="4" style="color:#767d8c">Keine Einträge.</td></tr>';
+  }
+  for(var i=0;i<g.length;i++){
+    var e=g[i], mehr=e.tage.length>1, auf=abwOffen[e.name+'|'+e.von];
+    var zeit = mehr ? tagKurz(e.von)+' – '+tagKurz(e.bis)+
+                      ' <span class="kl">'+e.tage.length+' Tage</span>'
+                    : tagKurz(e.von);
+    h+='<tr><td data-l="Zeitraum">'+zeit+'</td>'+
+       '<td data-l="Person"><b>'+e.name+'</b></td>'+
+       '<td data-l="Grund">'+(e.grund||'-')+'</td>'+
+       '<td class="rechts">'+
+       (mehr?'<button class="btn hell" onclick="abwAufzu(\''+abwSchalter(e)+
+             '\')">'+(auf?'Tage zu':'Tage')+'</button> ':'')+
+       '<button class="btn rot" onclick="abwGruppeLoeschen(\''+q(e.name)+'\',\''+
+       e.von+'\',\''+e.bis+'\','+e.tage.length+',this)">Löschen</button></td></tr>';
+
+    if(mehr && auf){
+      for(var t=0;t<e.tage.length;t++){
+        h+='<tr><td data-l="Einzelner Tag" class="kl">'+tagKurz(e.tage[t])+'</td>'+
+           '<td data-l=""></td><td data-l=""></td>'+
+           '<td class="rechts"><button class="btn hell" onclick="aLoeschen(\''+
+           e.tage[t]+'\',\''+q(e.name)+'\',this)">nur diesen Tag</button></td></tr>';
+      }
+    }
+  }
+  return h+'</table>';
+}
+
+function abwAufzu(s){
+  var t=s.split('|');
+  var k=t[0]+'|'+t[1];
+  if(abwOffen[k]) delete abwOffen[k]; else abwOffen[k]=true;
+  var el=document.getElementById('abwListe');
+  if(el) el.innerHTML=abwListeHtml();
+}
+
+function abwGruppeLoeschen(name,von,bis,tage,btn){
+  if(tage>1 && !confirm(name+': alle '+tage+' Tage von '+tagKurz(von)+
+      ' bis '+tagKurz(bis)+' löschen?')) return;
+  var fertig=laeuft(btn,'Löscht...');
+  google.script.run
+    .withSuccessHandler(function(r){
+      fertig(); daten=null;
+      var n=(r&&r.weg)||tage;
+      toast(n===1?'Abwesenheit gelöscht':n+' Tage gelöscht'); ladeDash(); })
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .abwesendZeitraumLoeschen(TOKEN, name, von, bis);
+}
+
+function einstModusSetzen(m){ einstModus=m; zeichneAbw(); }
+
 function zeichneAbw(){
   document.getElementById('titel').textContent='Einstellungen';
-  document.getElementById('sub').textContent=
-    'Abwesend sowie Team und Rechte';
+  document.getElementById('sub').textContent = einstModus==='abwesend'
+    ? 'Wer wann nicht arbeitet' : 'Mitarbeiter anlegen und Rechte setzen';
+
+  var reiter='<div class="modus" style="max-width:420px">'+
+    '<div class="'+(einstModus==='abwesend'?'an':'')+'" '+
+    'onclick="einstModusSetzen(\'abwesend\')">Abwesend</div>'+
+    '<div class="'+(einstModus==='team'?'an':'')+'" '+
+    'onclick="einstModusSetzen(\'team\')">Team und Rechte</div></div>';
+
+  if(einstModus==='team'){
+    document.getElementById('inhalt').innerHTML=reiter+
+      '<div id="maBereich"><div class="info">Lade...</div></div>';
+    if(MA && MA.length) maNeuZeichnen();
+    maLaden(maNeuZeichnen);
+    return;
+  }
 
   var heute=new Date().toISOString().slice(0,10);
-  var h='<div class="abschnitt"><div class="akopf">'+
-        '<span class="atitel">Abwesend</span>'+
-        '<span class="azahl">wer wann nicht arbeitet</span>'+
-        '<span class="alinie"></span></div>'+
+  var h=reiter+
         '<div class="zeile-form"><div class="reihe2">'+
         '<div class="fg"><label>Person</label><select id="aName">';
   for(var i=0;i<dash.personen.length;i++)
@@ -1846,32 +1950,12 @@ function zeichneAbw(){
      '<input type="text" id="aGrund" placeholder="krank, Urlaub"></div>'+
      '<button class="btn primer" onclick="aSpeichern(this)">Eintragen</button>'+
      '</div>'+
-     '<div class="kl" style="margin-top:8px">Bei einem Zeitraum wird für jeden '+
-     'Arbeitstag von Montag bis Donnerstag ein Eintrag angelegt. Einzelne Tage '+
-     'kannst du unten wieder löschen.</div></div>';
-
-  h+='<table class="t"><tr><th>Datum</th><th>Person</th><th>Grund</th><th></th></tr>';
-  if(!dash.abwesend.length){
-    h+='<tr><td colspan="4" style="color:#767d8c">Keine Einträge.</td></tr>';
-  }else{
-    for(var a=0;a<dash.abwesend.length;a++){
-      var e=dash.abwesend[a];
-      h+='<tr><td data-l="Datum">'+e.datum+'</td>'+
-         '<td data-l="Person"><b>'+e.name+'</b></td>'+
-         '<td data-l="Grund">'+(e.grund||'-')+'</td>'+
-         '<td class="rechts"><button class="btn rot" onclick="aLoeschen(\''+
-         q(e.datum)+'\',\''+q(e.name)+'\',this)">Löschen</button></td></tr>';
-    }
-  }
-  h+='</table></div>';
-
-  h+='<div class="abschnitt"><div class="akopf">'+
-     '<span class="atitel">Team und Rechte</span>'+
-     '<span class="azahl">Mitarbeiter anlegen und Rechte setzen</span>'+
-     '<span class="alinie"></span></div><div id="maBereich"></div></div>';
+     '<div class="kl" style="margin-top:8px">Ein Zeitraum erscheint unten als '+
+     'eine Zeile. Über "Tage" siehst du die einzelnen Tage und kannst einen '+
+     'davon wieder freigeben.</div></div>'+
+     '<div id="abwListe">'+abwListeHtml()+'</div>';
 
   document.getElementById('inhalt').innerHTML=h;
-  maLaden(maNeuZeichnen);
 }
 
 function maNeuZeichnen(){
@@ -2422,7 +2506,7 @@ function abgLaden(){
   google.script.run
     .withSuccessHandler(function(l){
       ABGladt=false; ABG=l||[];
-      if(ansicht==='kind' && sModus==='weg'){ filterZeichnen(); sucheFiltern(); } })
+      if(ansicht==='kind' && sModus==='weg') sucheFiltern(); })
     .withFailureHandler(function(e){
       ABGladt=false;
       var el=document.getElementById('sErgebnis');
@@ -2496,7 +2580,7 @@ function filterZeichnen(){
   if(!el) return;
   // In der Abgemeldet-Liste gibt es KDATEN noch nicht, dort kommen die
   // Schulen aus der Liste selbst.
-  var schulen=(KDATEN&&KDATEN.schulen)?KDATEN.schulen:[];
+  var schulen=KDATEN?KDATEN.schulen:[];
   if(sModus==='weg' && ABG){
     schulen=[];
     for(var s=0;s<ABG.length;s++)
@@ -2809,7 +2893,7 @@ function kindAbmeldenKlick(btn){
   var fertig=laeuft(btn,'Meldet ab...');
   google.script.run
     .withSuccessHandler(function(){
-      fertig(); KSTAMM=null; daten=null; KDATEN=null; ABG=null;
+      fertig(); KSTAMM=null; daten=null;
       toast(name+' abgemeldet'); zeigeSuche(); })
     .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
     .kindAbmelden(TOKEN, kAlt, document.getElementById('kfGrund').value);
