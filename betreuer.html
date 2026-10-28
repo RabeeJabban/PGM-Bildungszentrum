@@ -245,6 +245,9 @@
   .azahl{font-size:12px;color:var(--mut)}
   .alinie{flex:1;height:1px;background:var(--line)}
   .kl{color:var(--mut);font-size:12px}
+  .hinw{margin-top:9px;font-size:13px;padding:8px 11px;border-radius:8px}
+  .hinw.ok{background:#ecfdf5;color:#065f46}
+  .hinw.no{background:#fff7ed;color:#9a3412}
   .vzeiten{display:flex;gap:8px;margin-top:10px;align-items:center}
   .vzeiten input{flex:1;padding:9px;border:1px solid var(--line);
                  border-radius:8px;font-size:15px;font-family:inherit;min-width:0}
@@ -478,6 +481,7 @@
   <div class="tab an" id="tabPlan" onclick="wechsel('plan')">Mein Plan</div>
   <div class="tab" id="tabKind" onclick="wechsel('kind')">Kinder</div>
   <div class="tab" id="tabVerf" onclick="wechsel('verf')">Meine Zeiten</div>
+  <div class="tab" id="tabAbr" onclick="wechsel('abr')">Abrechnung</div>
   <div class="tab" id="tabAbw" onclick="wechsel('abw')">Abwesend</div>
   <div class="tab" id="tabTeam" onclick="wechsel('team')" style="display:none">Team</div>
 </div>
@@ -521,7 +525,7 @@ function merkeLoeschen(k){ try{ localStorage.removeItem(k); }catch(e){} }
 // Namen, die der Server annimmt. Die Liste muss zu API_ERLAUBT in
 // WebApp.gs passen. Kommt ein Name dazu, hier und dort eintragen.
 var AUFRUFE = ['abgemeldetListe','abmelden','abrechnungPdf','abwesendHinzu',
-  'abwesendLoeschen',
+  'abwesendLoeschen','abwesendZeitraumLoeschen',
   'codeAnfordern','codePruefen','ehrenFuer','ehrenHinzu','ehrenLoeschen',
   'elternStart','festHinzu','festLoeschen','internGesehen','kindAbmelden',
   'kindPruefen','kindSpeichern','kindWiederAnmelden','kinderDaten',
@@ -529,6 +533,7 @@ var AUFRUFE = ['abgemeldetListe','abmelden','abrechnungPdf','abwesendHinzu',
   'ksBestaetigen','ksErinnern','ksStand','ksUnterschrift','ladeDashboard',
   'ladeTag','loescheAbwesend','loescheTag','meinTag','meineAbwesenheiten',
   'meldeAbwesend','meldungAntwort','meldungGesehen','meldungIntern',
+  'meineAbrechnung',
   'meldungSenden','mitarbeiterSpeichern','mitteilungSenden','monatBerechnen',
   'monatPerson','monatPersonPdf',
   'monatSpeichern','nachrichtEmpfaenger','nachrichtSenden','personSpeichern',
@@ -761,11 +766,13 @@ function wechsel(a){
   ansicht=a;
   document.getElementById('tabPlan').className='tab'+(a==='plan'?' an':'');
   document.getElementById('tabVerf').className='tab'+(a==='verf'?' an':'');
+  document.getElementById('tabAbr').className='tab'+(a==='abr'?' an':'');
   document.getElementById('tabAbw').className='tab'+(a==='abw'?' an':'');
   document.getElementById('tabKind').className='tab'+(a==='kind'?' an':'');
   document.getElementById('tabTeam').className='tab'+(a==='team'?' an':'');
   document.getElementById('steuer').style.display=(a==='plan'?'flex':'none');
   if(a==='kind'){ zeigeSuche(); return; }
+  if(a==='abr'){ zeigeMeineAbr(); return; }
   if(a==='abw'){ zeigeAbw(); return; }
   if(a==='team'){ zeigeTeam(); return; }
   zeichne();
@@ -937,7 +944,7 @@ function dauerText(d){
 
 function zeichne(){
   if(!daten) return;
-  if(ansicht==='kind' || ansicht==='abw' || ansicht==='team') return;
+  if(ansicht==='kind' || ansicht==='abw' || ansicht==='team' || ansicht==='abr') return;
   if(ansicht==='verf'){ zeichneVerf(); return; }
 
   try{
@@ -1280,6 +1287,98 @@ function speichereZeiten(btn){
 
 // ---------- Abwesend ----------
 
+// ---------- Meine Abrechnung ----------
+var MABR=null, mabrMonat='';
+
+// "2026-09-21" -> "Mo 21.09."
+function tagKurz(d){
+  var t=String(d||'').split('-');
+  if(t.length!==3) return String(d||'');
+  var dat=new Date(Number(t[0]),Number(t[1])-1,Number(t[2]),12,0,0);
+  return TAGE[dat.getDay()].slice(0,2)+' '+t[2]+'.'+t[1]+'.';
+}
+
+function zeigeMeineAbr(){
+  document.getElementById('sub').textContent='Was du gearbeitet hast';
+  if(!mabrMonat) mabrMonat=new Date().toISOString().slice(0,7);
+  document.getElementById('inhalt').innerHTML=
+    '<div class="abwform">'+
+    '<input type="month" id="mabrMonat" value="'+mabrMonat+'">'+
+    '<button class="btn primer" onclick="mabrLaden(this)">Anzeigen</button></div>'+
+    '<div class="kl" style="margin:4px 2px 14px">Gezählt werden nur Tage, deren Plan '+
+    'freigegeben ist. Der laufende Monat wächst also noch.</div>'+
+    '<div id="mabrInhalt">'+
+    (MABR ? mabrHtml(MABR)
+          : '<div class="info">Monat wählen und auf Anzeigen tippen.</div>')+
+    '</div>';
+  if(!MABR) mabrLaden(null);
+}
+
+function mabrLaden(btn){
+  var el=document.getElementById('mabrMonat');
+  if(el && el.value) mabrMonat=el.value;
+  if(!mabrMonat){ toast('Bitte einen Monat wählen',true); return; }
+  var fertig=btn?laeuft(btn,'Rechnet...'):function(){};
+  google.script.run
+    .withSuccessHandler(function(d){
+      fertig(); MABR=d;
+      var z=document.getElementById('mabrInhalt');
+      if(z) z.innerHTML=mabrHtml(d); })
+    .withFailureHandler(function(e){
+      fertig(); MABR=null;
+      var z=document.getElementById('mabrInhalt');
+      if(z) z.innerHTML='<div class="info">'+e.message+'</div>'; })
+    .meineAbrechnung(TOKEN, mabrMonat);
+}
+
+function mabrHtml(d){
+  if(d.leer){
+    return '<div class="info">'+(d.praktikant
+      ? 'Für Praktikumszeiten wird keine Abrechnung geführt.'
+      : 'Für '+d.zeitraum+' ist für dich kein freigegebener Einsatz eingetragen.')+
+      '</div>';
+  }
+  var p=d.person, z=d.zeilen||[];
+
+  var r='';
+  for(var i=0;i<z.length;i++){
+    var x=z[i];
+    var menge = x.einheiten ? (x.einheiten+' Einh.')
+                            : (x.stunden ? x.stunden.toFixed(2)+' h' : '');
+    r+='<tr><td data-l="Tag"><b>'+tagKurz(x.datum)+'</b></td>'+
+       '<td data-l="Schule">'+(x.schule||'')+'</td>'+
+       '<td data-l="Aufgabe">'+(x.aufgabe||'')+
+       (x.gruppe?'<div class="kl">'+x.gruppe+'</div>':'')+'</td>'+
+       '<td data-l="Zeit">'+(x.von?x.von+'–'+x.bis:'')+'</td>'+
+       '<td data-l="Menge">'+menge+'</td>'+
+       '<td data-l="Betrag"><b>'+x.betrag.toFixed(2)+' &euro;</b>'+
+       (x.bemerkung?'<div class="kl">'+x.bemerkung+'</div>':'')+'</td></tr>';
+  }
+  if(!r) r='<tr><td data-l="">Keine einzelnen Einsätze hinterlegt.</td></tr>';
+
+  var teile=[];
+  if(p.abhol) teile.push('Abholung '+p.abhol.toFixed(2)+' h');
+  if(p.ez) teile.push('Extrazeit '+p.ez.toFixed(2)+' h');
+  if(p.empfang) teile.push('Empfang '+p.empfang.toFixed(2)+' h');
+  if(p.warte) teile.push('Wartezeit '+p.warte.toFixed(2)+' h');
+  if(p.but) teile.push('BUT '+p.but+' Einheiten');
+
+  return '<div class="akopf"><span class="atitel">'+d.zeitraum+'</span>'+
+    '<span class="alinie"></span>'+
+    '<span class="azahl">'+z.length+(z.length===1?' Eintrag':' Einträge')+'</span></div>'+
+    '<div class="hinw ok" style="margin:0 0 10px">Zusammen <b>'+
+    p.betrag.toFixed(2)+' &euro;</b></div>'+
+    (teile.length?'<div class="kl" style="margin:0 2px 12px">'+
+      teile.join(' &middot; ')+'</div>':'')+
+    '<table class="t"><tr><th>Tag</th><th>Schule</th><th>Aufgabe</th><th>Zeit</th>'+
+    '<th>Menge</th><th>Betrag</th></tr>'+r+
+    '<tr><td data-l="Gesamt"><b>Gesamt '+p.betrag.toFixed(2)+' &euro;</b></td></tr></table>'+
+    '<div class="kl" style="margin-top:12px">Abholungen werden bis zu 15 Minuten über '+
+    'das Ende hinaus bezahlt, wenn danach nichts direkt folgt. Lücken zwischen zwei '+
+    'Einsätzen am selben Tag gelten als Wartezeit. Das ist eine Übersicht, keine '+
+    'Lohnabrechnung. Wenn etwas nicht stimmt, melde dich bei der Leitung.</div>';
+}
+
 function zeigeAbw(){
   document.getElementById('sub').textContent='Tage, an denen du nicht kannst';
   var heute=heuteStr();
@@ -1392,7 +1491,7 @@ function abgLaden(){
   google.script.run
     .withSuccessHandler(function(l){
       ABGladt=false; ABG=l||[];
-      if(ansicht==='kind' && sModus==='weg'){ filterZeichnen(); sucheFiltern(); } })
+      if(ansicht==='kind' && sModus==='weg') sucheFiltern(); })
     .withFailureHandler(function(e){
       ABGladt=false;
       var el=document.getElementById('sErgebnis');
@@ -1466,7 +1565,7 @@ function filterZeichnen(){
   if(!el) return;
   // In der Abgemeldet-Liste gibt es KDATEN noch nicht, dort kommen die
   // Schulen aus der Liste selbst.
-  var schulen=(KDATEN&&KDATEN.schulen)?KDATEN.schulen:[];
+  var schulen=KDATEN?KDATEN.schulen:[];
   if(sModus==='weg' && ABG){
     schulen=[];
     for(var s=0;s<ABG.length;s++)
@@ -1630,8 +1729,7 @@ var KTAGE=[['Mo','Montag'],['Di','Dienstag'],['Mi','Mittwoch'],['Do','Donnerstag
 function darfKinder(){ return CHEF || (daten && daten.darfKinder); }
 function darfAbmelden(){ return CHEF; }
 
-function kindNeu(){ kAlt=null; kWieder=null; kVorlage=null;
-  kStammDann(function(){ kindFormular(null); }); }
+function kindNeu(){ kAlt=null; kStammDann(function(){ kindFormular(null); }); }
 
 function kStammDann(fn){
   if(KSTAMM){ fn(); return; }
@@ -1660,14 +1758,10 @@ function kindBearbeiten(name,schule,klasse){
 
 function kindFormular(i){
   kAlt=(i===null||i===undefined)?null:kTreffer[i];
-  if(kAlt) { kWieder=null; kVorlage=null; }
-  var k=kAlt||kVorlage||{schule:KSTAMM.schulen[0]||'', vorname:'', nachname:'',
-               klasse:'', status:'EZ', Mo:'', Di:'', Mi:'', Do:'',
-               telefon:'', allein:''};
+  var k=kAlt||{schule:KSTAMM.schulen[0]||'', vorname:'', nachname:'', klasse:'',
+               status:'EZ', Mo:'', Di:'', Mi:'', Do:'', telefon:'', allein:''};
   var sub=document.getElementById('sub');
-  if(sub) sub.textContent = kAlt ? 'Kind bearbeiten'
-                          : kWieder ? 'Wieder anmelden, Klasse bitte prüfen'
-                          : 'Neues Kind anmelden';
+  if(sub) sub.textContent=kAlt?'Kind bearbeiten':'Neues Kind anmelden';
 
   var h='<div class="kform">'+
     '<div class="zeile">'+
@@ -1758,18 +1852,13 @@ function kindSpeichernKlick(btn){
   if(!tage && !confirm('Für keinen Tag ist eine Abholzeit eingetragen. Trotzdem speichern?')) return;
 
   var fertig=laeuft(btn,'Speichert...');
-  var wieder=kWieder;
-  var lauf=google.script.run
+  google.script.run
     .withSuccessHandler(function(){
-      fertig(); KSTAMM=null; daten=null; KDATEN=null;
-      if(wieder){ ABG=null; kWieder=null; kVorlage=null; }
-      toast(neu.vorname+' '+neu.nachname+
-            (kAlt?' gespeichert':(wieder?' wieder angemeldet':' angemeldet')));
-      if(wieder) sModus='weg';
+      fertig(); KSTAMM=null; daten=null;
+      toast(neu.vorname+' '+neu.nachname+(kAlt?' gespeichert':' angemeldet'));
       zeigeSuche(); })
-    .withFailureHandler(function(e){ fertig(); toast(e.message,true); });
-  if(wieder) lauf.kindWiederAnmelden(TOKEN, wieder, neu);
-  else lauf.kindSpeichern(TOKEN, kAlt, neu);
+    .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
+    .kindSpeichern(TOKEN, kAlt, neu);
 }
 
 function kindAbmeldenKlick(btn){
@@ -1779,7 +1868,7 @@ function kindAbmeldenKlick(btn){
   var fertig=laeuft(btn,'Meldet ab...');
   google.script.run
     .withSuccessHandler(function(){
-      fertig(); KSTAMM=null; daten=null; KDATEN=null; ABG=null;
+      fertig(); KSTAMM=null; daten=null;
       toast(name+' abgemeldet'); zeigeSuche(); })
     .withFailureHandler(function(e){ fertig(); toast(e.message,true); })
     .kindAbmelden(TOKEN, kAlt, document.getElementById('kfGrund').value);
